@@ -5,75 +5,134 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   AlertTriangle,
   ArrowLeftRight,
+  Ban,
+  Box,
   Clipboard,
   ClipboardCheck,
+  ClipboardList,
+  Clock,
   CreditCard,
   Factory,
-  FileX,
   MessageSquare,
   PackageCheck,
+  PackageX,
   RefreshCw,
+  ShoppingBag,
   ShoppingCart,
   Truck,
+  XCircle,
+  Zap,
 } from "lucide-react";
 import { useState } from "react";
 
-type TabId =
-  | "order-confirm"
+type MainTabId = "shopify" | "eshopbox" | "under-production" | "orders-request";
+type ShopifySubTabId = "order-confirm" | "abandoned-checkout";
+type EshopboxSubTabId =
   | "delivery-failed"
   | "damaged-unit"
   | "wrong-unit"
-  | "under-production"
   | "return-cod"
-  | "return-prepaid"
-  | "abandoned-checkout"
-  | "cancel-request";
+  | "return-prepaid";
+type OrdersRequestSubTabId =
+  | "order-cancellation"
+  | "estimate-delivery"
+  | "unfulfilled"
+  | "cancelled"
+  | "urgent-delivery";
 
-const TABS: { id: TabId; label: string; icon: React.ReactNode }[] = [
-  {
-    id: "order-confirm",
-    label: "Order Confirmation Not Received",
-    icon: <PackageCheck size={18} />,
-  },
-  {
-    id: "delivery-failed",
-    label: "Delivery Failed",
-    icon: <Truck size={18} />,
-  },
-  {
-    id: "damaged-unit",
-    label: "Damaged Unit Received",
-    icon: <AlertTriangle size={18} />,
-  },
-  {
-    id: "wrong-unit",
-    label: "Wrong Unit Received",
-    icon: <ArrowLeftRight size={18} />,
-  },
+const MAIN_TABS: { id: MainTabId; label: string; icon: React.ReactNode }[] = [
+  { id: "shopify", label: "Shopify", icon: <ShoppingBag size={18} /> },
+  { id: "eshopbox", label: "Eshopbox", icon: <Box size={18} /> },
   {
     id: "under-production",
     label: "Order Under Production",
     icon: <Factory size={18} />,
   },
   {
-    id: "return-cod",
-    label: "Return \u2013 COD",
-    icon: <CreditCard size={18} />,
+    id: "orders-request",
+    label: "Orders Request",
+    icon: <ClipboardList size={18} />,
   },
+];
+
+const SHOPIFY_SUB_TABS: {
+  id: ShopifySubTabId;
+  label: string;
+  icon: React.ReactNode;
+}[] = [
   {
-    id: "return-prepaid",
-    label: "Return \u2013 Prepaid",
-    icon: <RefreshCw size={18} />,
+    id: "order-confirm",
+    label: "Order Confirmation Not Received",
+    icon: <PackageCheck size={16} />,
   },
   {
     id: "abandoned-checkout",
     label: "Abandoned Checkout",
-    icon: <ShoppingCart size={18} />,
+    icon: <ShoppingCart size={16} />,
+  },
+];
+
+const ESHOPBOX_SUB_TABS: {
+  id: EshopboxSubTabId;
+  label: string;
+  icon: React.ReactNode;
+}[] = [
+  {
+    id: "delivery-failed",
+    label: "Delivery Failed",
+    icon: <Truck size={16} />,
   },
   {
-    id: "cancel-request",
-    label: "Cancel Msg Request",
-    icon: <FileX size={18} />,
+    id: "damaged-unit",
+    label: "Damage Unit Received",
+    icon: <AlertTriangle size={16} />,
+  },
+  {
+    id: "wrong-unit",
+    label: "Wrong Unit Received",
+    icon: <ArrowLeftRight size={16} />,
+  },
+  {
+    id: "return-cod",
+    label: "Return-COD",
+    icon: <CreditCard size={16} />,
+  },
+  {
+    id: "return-prepaid",
+    label: "Return-Prepaid",
+    icon: <RefreshCw size={16} />,
+  },
+];
+
+const ORDERS_REQUEST_SUB_TABS: {
+  id: OrdersRequestSubTabId;
+  label: string;
+  icon: React.ReactNode;
+}[] = [
+  {
+    id: "order-cancellation",
+    label: "Order Cancellation",
+    icon: <XCircle size={16} />,
+  },
+  {
+    id: "estimate-delivery",
+    label: "Estimate Delivery",
+    icon: <Clock size={16} />,
+  },
+  {
+    id: "unfulfilled",
+    label: "Unfulfilled",
+    icon: <PackageX size={16} />,
+  },
+  {
+    id: "cancelled",
+    label: "Cancelled",
+    icon: <Ban size={16} />,
+  },
+  {
+    id: "urgent-delivery",
+    label: "Urgent Delivery",
+    icon: <Zap size={16} />,
   },
 ];
 
@@ -95,7 +154,7 @@ const formatDate = (d: string) => {
     "November",
     "December",
   ];
-  return `${Number.parseInt(day)} ${months[Number.parseInt(m) - 1]},${y}`;
+  return `${Number.parseInt(day)} ${months[Number.parseInt(m) - 1]}, ${y}`;
 };
 
 function FormField({
@@ -119,9 +178,7 @@ function FormField({
     <div className="flex flex-col gap-1">
       <Label
         htmlFor={id}
-        className={`text-xs font-medium uppercase tracking-wide ${
-          disabled ? "text-muted-foreground/40" : "text-muted-foreground"
-        }`}
+        className={`text-xs font-medium uppercase tracking-wide ${disabled ? "text-muted-foreground/40" : "text-muted-foreground"}`}
       >
         {label}
       </Label>
@@ -132,9 +189,7 @@ function FormField({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder || label}
         disabled={disabled}
-        className={`rounded-lg border-border bg-card text-sm h-9 ${
-          disabled ? "opacity-40 cursor-not-allowed" : ""
-        }`}
+        className={`rounded-lg border-border bg-card text-sm h-9 ${disabled ? "opacity-40 cursor-not-allowed" : ""}`}
         data-ocid={`${id}.input`}
       />
     </div>
@@ -188,7 +243,6 @@ function OrderConfirmTab() {
   });
   const [message, setMessage] = useState("");
   const [copied, setCopied] = useState(false);
-
   const set = (k: keyof typeof fields) => (v: string) =>
     setFields((p) => ({ ...p, [k]: v }));
 
@@ -271,10 +325,8 @@ function DeliveryFailedTab() {
   });
   const [message, setMessage] = useState("");
   const [copied, setCopied] = useState(false);
-
   const set = (k: keyof typeof fields) => (v: string) =>
     setFields((p) => ({ ...p, [k]: v }));
-
   const reminder1Filled = fields.reminder1.trim() !== "";
 
   const generate = () => {
@@ -388,8 +440,7 @@ function DamagedUnitTab() {
 
   const generate = () => {
     const { name, orderId, itemName } = fields;
-    setMessage(
-      `Dear ${name || "[Name]"},
+    setMessage(`Dear ${name || "[Name]"},
 
 We sincerely apologize for the inconvenience caused. We understand that you have received a damaged unit for Order ID: ${orderId || "[Order ID]"} (${itemName || "[Item Name]"}).
 
@@ -398,8 +449,7 @@ We take full responsibility for this issue and would like to resolve it as quick
 We assure you this will be handled with top priority.
 
 Thank you!
-Team LamaStore`,
-    );
+Team LamaStore`);
   };
 
   const copy = async () => {
@@ -785,78 +835,18 @@ function AbandonedCheckoutTab() {
   );
 }
 
-function TypeToggle({
-  value,
-  onChange,
-  prefix,
-}: {
-  value: "cod" | "prepaid";
-  onChange: (v: "cod" | "prepaid") => void;
-  prefix: string;
-}) {
-  return (
-    <div className="flex gap-2 mb-2">
-      <button
-        type="button"
-        onClick={() => onChange("cod")}
-        className={`flex-1 py-2 rounded-lg text-xs font-semibold border transition-colors ${
-          value === "cod"
-            ? "bg-primary text-primary-foreground border-primary"
-            : "bg-card text-muted-foreground border-border hover:bg-muted/50"
-        }`}
-        data-ocid={`${prefix}-cod.toggle`}
-      >
-        COD
-      </button>
-      <button
-        type="button"
-        onClick={() => onChange("prepaid")}
-        className={`flex-1 py-2 rounded-lg text-xs font-semibold border transition-colors ${
-          value === "prepaid"
-            ? "bg-primary text-primary-foreground border-primary"
-            : "bg-card text-muted-foreground border-border hover:bg-muted/50"
-        }`}
-        data-ocid={`${prefix}-prepaid.toggle`}
-      >
-        Prepaid
-      </button>
-    </div>
-  );
-}
-
-function CancelRequestTab() {
-  const [cancelType, setCancelType] = useState<"cod" | "prepaid">("cod");
-  const [codFields, setCodFields] = useState({
-    name: "",
-    orderId: "",
-    itemName: "",
-  });
-  const [prepaidFields, setPrepaidFields] = useState({
-    name: "",
-    orderId: "",
-    itemName: "",
-    refundAmount: "",
-  });
+function OrderCancellationTab() {
+  const [fields, setFields] = useState({ name: "", orderId: "", itemName: "" });
   const [message, setMessage] = useState("");
   const [copied, setCopied] = useState(false);
-
-  const setCod = (k: keyof typeof codFields) => (v: string) =>
-    setCodFields((p) => ({ ...p, [k]: v }));
-  const setPrepaid = (k: keyof typeof prepaidFields) => (v: string) =>
-    setPrepaidFields((p) => ({ ...p, [k]: v }));
+  const set = (k: keyof typeof fields) => (v: string) =>
+    setFields((p) => ({ ...p, [k]: v }));
 
   const generate = () => {
-    if (cancelType === "cod") {
-      const { name, orderId, itemName } = codFields;
-      setMessage(
-        `Dear ${name || "[Name]"},\n\nWe have received your cancellation request for Order ID: #${orderId || "[Order ID]"} for the "${itemName || "[Item Name]"}" item.\n\nWe are currently processing your request. Since this is a Cash on Delivery order, no refund will be initiated. You will receive a confirmation message on your registered mobile number once the cancellation is successfully completed.\n\nThank you!\nTeam LamaStore`,
-      );
-    } else {
-      const { name, orderId, itemName, refundAmount } = prepaidFields;
-      setMessage(
-        `Dear ${name || "[Name]"},\n\nWe have received your cancellation request for Order ID: #${orderId || "[Order ID]"} for "${itemName || "[Item Name]"}".\n\nWe are currently processing your request and will confirm the cancellation shortly. Once confirmed, your refund of Rs. ${refundAmount || "[Refund Amount]"} will be credited to your source account within 5-7 working days.\n\nWe will notify you once the cancellation is confirmed.\n\n${SIGN_OFF}`,
-      );
-    }
+    const { name, orderId, itemName } = fields;
+    setMessage(
+      `Dear ${name || "[Name]"},\n\nWe have received your cancellation request for Order ID: #${orderId || "[Order ID]"} for the "${itemName || "[Item Name]"}" item.\n\nWe are currently processing your request and will confirm the cancellation shortly. You will receive a confirmation message on your registered mobile number once the cancellation is successfully completed.\n\nThank you!\nTeam LamaStore`,
+    );
   };
 
   const copy = async () => {
@@ -869,64 +859,256 @@ function CancelRequestTab() {
     <TabLayout
       fields={
         <>
-          <TypeToggle
-            value={cancelType}
-            onChange={(v) => {
-              setCancelType(v);
-              setMessage("");
-            }}
-            prefix="cr"
+          <FormField
+            label="Customer Name"
+            id="orcan-name"
+            value={fields.name}
+            onChange={set("name")}
           />
-          {cancelType === "cod" ? (
-            <>
-              <FormField
-                label="Customer Name"
-                id="cr-cod-name"
-                value={codFields.name}
-                onChange={setCod("name")}
-              />
-              <FormField
-                label="Order ID"
-                id="cr-cod-orderid"
-                value={codFields.orderId}
-                onChange={setCod("orderId")}
-              />
-              <FormField
-                label="Item Name"
-                id="cr-cod-item"
-                value={codFields.itemName}
-                onChange={setCod("itemName")}
-              />
-            </>
-          ) : (
-            <>
-              <FormField
-                label="Customer Name"
-                id="cr-pre-name"
-                value={prepaidFields.name}
-                onChange={setPrepaid("name")}
-              />
-              <FormField
-                label="Order ID"
-                id="cr-pre-orderid"
-                value={prepaidFields.orderId}
-                onChange={setPrepaid("orderId")}
-              />
-              <FormField
-                label="Item Name"
-                id="cr-pre-item"
-                value={prepaidFields.itemName}
-                onChange={setPrepaid("itemName")}
-              />
-              <FormField
-                label="Refund Amount (Rs.)"
-                id="cr-pre-refund"
-                value={prepaidFields.refundAmount}
-                onChange={setPrepaid("refundAmount")}
-                placeholder="e.g. 1299"
-              />
-            </>
-          )}
+          <FormField
+            label="Order ID"
+            id="orcan-orderid"
+            value={fields.orderId}
+            onChange={set("orderId")}
+          />
+          <FormField
+            label="Item Name"
+            id="orcan-item"
+            value={fields.itemName}
+            onChange={set("itemName")}
+          />
+        </>
+      }
+      message={message}
+      onGenerate={generate}
+      onCopy={copy}
+      copied={copied}
+    />
+  );
+}
+
+function EstimateDeliveryTab() {
+  const [fields, setFields] = useState({
+    name: "",
+    orderId: "",
+    itemName: "",
+    estimatedDeliveryDate: "",
+  });
+  const [message, setMessage] = useState("");
+  const [copied, setCopied] = useState(false);
+  const set = (k: keyof typeof fields) => (v: string) =>
+    setFields((p) => ({ ...p, [k]: v }));
+
+  const generate = () => {
+    const { name, orderId, itemName, estimatedDeliveryDate } = fields;
+    setMessage(
+      `Dear ${name || "[Name]"},\n\nThank you for reaching out! We understand you would like to know the estimated delivery date for your order.\n\nOrder ID: #${orderId || "[Order ID]"}\nItem: "${itemName || "[Item Name]"}"\nEstimated Delivery Date: ${formatDate(estimatedDeliveryDate) || "[Estimated Delivery Date]"}\n\nOur team is working to ensure your order reaches you on time. If you have any further queries, feel free to contact us.\n\nThank you!\nTeam LamaStore`,
+    );
+  };
+
+  const copy = async () => {
+    await navigator.clipboard.writeText(message);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <TabLayout
+      fields={
+        <>
+          <FormField
+            label="Customer Name"
+            id="ed-name"
+            value={fields.name}
+            onChange={set("name")}
+          />
+          <FormField
+            label="Order ID"
+            id="ed-orderid"
+            value={fields.orderId}
+            onChange={set("orderId")}
+          />
+          <FormField
+            label="Item Name"
+            id="ed-item"
+            value={fields.itemName}
+            onChange={set("itemName")}
+          />
+          <FormField
+            label="Estimated Delivery Date"
+            id="ed-date"
+            type="date"
+            value={fields.estimatedDeliveryDate}
+            onChange={set("estimatedDeliveryDate")}
+          />
+        </>
+      }
+      message={message}
+      onGenerate={generate}
+      onCopy={copy}
+      copied={copied}
+    />
+  );
+}
+
+function UnfulfilledTab() {
+  const [fields, setFields] = useState({ name: "", orderId: "", itemName: "" });
+  const [message, setMessage] = useState("");
+  const [copied, setCopied] = useState(false);
+  const set = (k: keyof typeof fields) => (v: string) =>
+    setFields((p) => ({ ...p, [k]: v }));
+
+  const generate = () => {
+    const { name, orderId, itemName } = fields;
+    setMessage(
+      `Dear ${name || "[Name]"},\n\nWe wanted to update you regarding your Order ID: #${orderId || "[Order ID]"} for the "${itemName || "[Item Name]"}" item.\n\nYour order is currently unfulfilled and is being processed by our team. We will keep you updated with the status and notify you once it is dispatched.\n\nWe appreciate your patience and understanding.\n\nThank you!\nTeam LamaStore`,
+    );
+  };
+
+  const copy = async () => {
+    await navigator.clipboard.writeText(message);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <TabLayout
+      fields={
+        <>
+          <FormField
+            label="Customer Name"
+            id="unf-name"
+            value={fields.name}
+            onChange={set("name")}
+          />
+          <FormField
+            label="Order ID"
+            id="unf-orderid"
+            value={fields.orderId}
+            onChange={set("orderId")}
+          />
+          <FormField
+            label="Item Name"
+            id="unf-item"
+            value={fields.itemName}
+            onChange={set("itemName")}
+          />
+        </>
+      }
+      message={message}
+      onGenerate={generate}
+      onCopy={copy}
+      copied={copied}
+    />
+  );
+}
+
+function CancelledTab() {
+  const [fields, setFields] = useState({ name: "", orderId: "", itemName: "" });
+  const [message, setMessage] = useState("");
+  const [copied, setCopied] = useState(false);
+  const set = (k: keyof typeof fields) => (v: string) =>
+    setFields((p) => ({ ...p, [k]: v }));
+
+  const generate = () => {
+    const { name, orderId, itemName } = fields;
+    setMessage(
+      `Dear ${name || "[Name]"},\n\nWe would like to inform you that your Order ID: #${orderId || "[Order ID]"} for the "${itemName || "[Item Name]"}" item has been successfully cancelled as per your request.\n\nIf you have any questions or need further assistance, please don't hesitate to reach out to us.\n\nThank you!\nTeam LamaStore`,
+    );
+  };
+
+  const copy = async () => {
+    await navigator.clipboard.writeText(message);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <TabLayout
+      fields={
+        <>
+          <FormField
+            label="Customer Name"
+            id="canc-name"
+            value={fields.name}
+            onChange={set("name")}
+          />
+          <FormField
+            label="Order ID"
+            id="canc-orderid"
+            value={fields.orderId}
+            onChange={set("orderId")}
+          />
+          <FormField
+            label="Item Name"
+            id="canc-item"
+            value={fields.itemName}
+            onChange={set("itemName")}
+          />
+        </>
+      }
+      message={message}
+      onGenerate={generate}
+      onCopy={copy}
+      copied={copied}
+    />
+  );
+}
+
+function UrgentDeliveryTab() {
+  const [fields, setFields] = useState({
+    name: "",
+    orderId: "",
+    itemName: "",
+    requestedDeliveryDate: "",
+  });
+  const [message, setMessage] = useState("");
+  const [copied, setCopied] = useState(false);
+  const set = (k: keyof typeof fields) => (v: string) =>
+    setFields((p) => ({ ...p, [k]: v }));
+
+  const generate = () => {
+    const { name, orderId, itemName, requestedDeliveryDate } = fields;
+    setMessage(
+      `Dear ${name || "[Name]"},\n\nThank you for contacting us regarding your Order ID: #${orderId || "[Order ID]"} for the "${itemName || "[Item Name]"}" item.\n\nWe understand the urgency of your delivery request for ${formatDate(requestedDeliveryDate) || "[Requested Delivery Date]"}. Our team is doing everything possible to expedite the shipment and ensure it reaches you at the earliest.\n\nWe will keep you updated on the delivery status.\n\nThank you!\nTeam LamaStore`,
+    );
+  };
+
+  const copy = async () => {
+    await navigator.clipboard.writeText(message);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <TabLayout
+      fields={
+        <>
+          <FormField
+            label="Customer Name"
+            id="ud-name"
+            value={fields.name}
+            onChange={set("name")}
+          />
+          <FormField
+            label="Order ID"
+            id="ud-orderid"
+            value={fields.orderId}
+            onChange={set("orderId")}
+          />
+          <FormField
+            label="Item Name"
+            id="ud-item"
+            value={fields.itemName}
+            onChange={set("itemName")}
+          />
+          <FormField
+            label="Requested Delivery Date"
+            id="ud-date"
+            type="date"
+            value={fields.requestedDeliveryDate}
+            onChange={set("requestedDeliveryDate")}
+          />
         </>
       }
       message={message}
@@ -1026,25 +1208,183 @@ function TabLayout({
   );
 }
 
-// ---- Tab Content Map ----
+// ---- Shopify Section (sub-tabs) ----
 
-const TAB_COMPONENTS: Record<TabId, React.ReactNode> = {
-  "order-confirm": <OrderConfirmTab />,
-  "delivery-failed": <DeliveryFailedTab />,
-  "damaged-unit": <DamagedUnitTab />,
-  "wrong-unit": <WrongUnitTab />,
+function ShopifySection() {
+  const [activeSubTab, setActiveSubTab] =
+    useState<ShopifySubTabId>("order-confirm");
+
+  return (
+    <div>
+      <div className="bg-muted/40 border border-border rounded-lg mb-5 overflow-x-auto">
+        <div className="flex min-w-max">
+          {SHOPIFY_SUB_TABS.map((sub) => {
+            const isActive = sub.id === activeSubTab;
+            return (
+              <button
+                type="button"
+                key={sub.id}
+                onClick={() => setActiveSubTab(sub.id)}
+                className={[
+                  "flex items-center gap-2 px-5 py-2.5 text-xs font-medium transition-colors relative whitespace-nowrap",
+                  isActive
+                    ? "text-primary border-b-2 border-primary bg-background"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50 border-b-2 border-transparent",
+                ].join(" ")}
+                data-ocid={`shopify-${sub.id}.subtab`}
+              >
+                <span
+                  className={
+                    isActive ? "text-primary" : "text-muted-foreground"
+                  }
+                >
+                  {sub.icon}
+                </span>
+                {sub.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+      <div key={activeSubTab}>
+        {activeSubTab === "order-confirm" ? (
+          <OrderConfirmTab />
+        ) : (
+          <AbandonedCheckoutTab />
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ---- Eshopbox Section (sub-tabs) ----
+
+function EshopboxSection() {
+  const [activeSubTab, setActiveSubTab] =
+    useState<EshopboxSubTabId>("delivery-failed");
+
+  const renderSubTab = () => {
+    switch (activeSubTab) {
+      case "delivery-failed":
+        return <DeliveryFailedTab />;
+      case "damaged-unit":
+        return <DamagedUnitTab />;
+      case "wrong-unit":
+        return <WrongUnitTab />;
+      case "return-cod":
+        return <ReturnCODTab />;
+      case "return-prepaid":
+        return <ReturnPrepaidTab />;
+    }
+  };
+
+  return (
+    <div>
+      <div className="bg-muted/40 border border-border rounded-lg mb-5 overflow-x-auto">
+        <div className="flex min-w-max">
+          {ESHOPBOX_SUB_TABS.map((sub) => {
+            const isActive = sub.id === activeSubTab;
+            return (
+              <button
+                type="button"
+                key={sub.id}
+                onClick={() => setActiveSubTab(sub.id)}
+                className={[
+                  "flex items-center gap-2 px-5 py-2.5 text-xs font-medium transition-colors relative whitespace-nowrap",
+                  isActive
+                    ? "text-primary border-b-2 border-primary bg-background"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50 border-b-2 border-transparent",
+                ].join(" ")}
+                data-ocid={`eshopbox-${sub.id}.subtab`}
+              >
+                <span
+                  className={
+                    isActive ? "text-primary" : "text-muted-foreground"
+                  }
+                >
+                  {sub.icon}
+                </span>
+                {sub.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+      <div key={activeSubTab}>{renderSubTab()}</div>
+    </div>
+  );
+}
+
+// ---- Orders Request Section (sub-tabs) ----
+
+function OrdersRequestSection() {
+  const [activeSubTab, setActiveSubTab] =
+    useState<OrdersRequestSubTabId>("order-cancellation");
+
+  const renderSubTab = () => {
+    switch (activeSubTab) {
+      case "order-cancellation":
+        return <OrderCancellationTab />;
+      case "estimate-delivery":
+        return <EstimateDeliveryTab />;
+      case "unfulfilled":
+        return <UnfulfilledTab />;
+      case "cancelled":
+        return <CancelledTab />;
+      case "urgent-delivery":
+        return <UrgentDeliveryTab />;
+    }
+  };
+
+  return (
+    <div>
+      <div className="bg-muted/40 border border-border rounded-lg mb-5 overflow-x-auto">
+        <div className="flex min-w-max">
+          {ORDERS_REQUEST_SUB_TABS.map((sub) => {
+            const isActive = sub.id === activeSubTab;
+            return (
+              <button
+                type="button"
+                key={sub.id}
+                onClick={() => setActiveSubTab(sub.id)}
+                className={[
+                  "flex items-center gap-2 px-5 py-2.5 text-xs font-medium transition-colors relative whitespace-nowrap",
+                  isActive
+                    ? "text-primary border-b-2 border-primary bg-background"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50 border-b-2 border-transparent",
+                ].join(" ")}
+                data-ocid={`orders-request-${sub.id}.subtab`}
+              >
+                <span
+                  className={
+                    isActive ? "text-primary" : "text-muted-foreground"
+                  }
+                >
+                  {sub.icon}
+                </span>
+                {sub.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+      <div key={activeSubTab}>{renderSubTab()}</div>
+    </div>
+  );
+}
+
+const MAIN_TAB_COMPONENTS: Record<MainTabId, React.ReactNode> = {
+  shopify: <ShopifySection />,
+  eshopbox: <EshopboxSection />,
   "under-production": <UnderProductionTab />,
-  "return-cod": <ReturnCODTab />,
-  "return-prepaid": <ReturnPrepaidTab />,
-  "abandoned-checkout": <AbandonedCheckoutTab />,
-  "cancel-request": <CancelRequestTab />,
+  "orders-request": <OrdersRequestSection />,
 };
 
 // ---- App ----
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<TabId>("order-confirm");
-  const activeTabInfo = TABS.find((t) => t.id === activeTab)!;
+  const [activeTab, setActiveTab] = useState<MainTabId>("shopify");
+  const activeTabInfo = MAIN_TABS.find((t) => t.id === activeTab)!;
 
   return (
     <div className="min-h-screen flex flex-col bg-background font-sans">
@@ -1072,9 +1412,10 @@ export default function App() {
           </p>
         </div>
 
+        {/* Main tab bar */}
         <div className="bg-card border border-border rounded-lg shadow-xs mb-6 overflow-x-auto">
           <div className="flex min-w-max">
-            {TABS.map((tab) => {
+            {MAIN_TABS.map((tab) => {
               const isActive = tab.id === activeTab;
               return (
                 <button
@@ -1103,7 +1444,7 @@ export default function App() {
           </div>
         </div>
 
-        <div key={activeTab}>{TAB_COMPONENTS[activeTab]}</div>
+        <div key={activeTab}>{MAIN_TAB_COMPONENTS[activeTab]}</div>
       </main>
 
       <footer className="py-4 text-center text-xs text-muted-foreground border-t border-border">
