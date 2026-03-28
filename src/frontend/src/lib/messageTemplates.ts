@@ -135,7 +135,7 @@ We sincerely apologize for the inconvenience caused. We're sorry to hear that yo
 To resolve this at the earliest, we request you to:
 1. Share clear photos of the damaged item
 2. Share the order ID
-3.Shipping Lable (Outer package)
+3. Shipping Lable
 
 We assure you that this will be handled on a priority basis.
 
