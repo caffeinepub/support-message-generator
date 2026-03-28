@@ -5,11 +5,11 @@ import Iter "mo:core/Iter";
 import Nat "mo:core/Nat";
 import Array "mo:core/Array";
 import Int "mo:core/Int";
-import Migration "migration";
+
 import List "mo:core/List";
 
 // specify the data migration function in with-clause
-(with migration = Migration.run)
+
 actor {
   type Role = {
     #user;

@@ -1,3 +1,4 @@
+import { DatePickerField } from "@/components/DatePickerField";
 import { FormField } from "@/components/FormField";
 import { MessageOutput } from "@/components/MessageOutput";
 import { Badge } from "@/components/ui/badge";
@@ -245,12 +246,11 @@ function AgentScenarioFields({
             onChange={(v) => setValue("orderId", v)}
             placeholder="#12345"
           />
-          <FormField
+          <DatePickerField
             label="Order Date"
             id="a-orderDate"
             value={get("orderDate")}
             onChange={(v) => setValue("orderDate", v)}
-            placeholder="e.g. 28 March, 2026"
           />
         </>
       );
@@ -306,7 +306,7 @@ function AgentScenarioFields({
             value={get("orderId")}
             onChange={(v) => setValue("orderId", v)}
           />
-          <FormField
+          <DatePickerField
             label="Order Date"
             id="a-orderDate"
             value={get("orderDate")}
@@ -318,7 +318,7 @@ function AgentScenarioFields({
             value={get("itemName")}
             onChange={(v) => setValue("itemName", v)}
           />
-          <FormField
+          <DatePickerField
             label="Attempt 1 Date"
             id="a-a1d"
             value={get("attempt1Date")}
@@ -399,7 +399,7 @@ function AgentScenarioFields({
             value={get("orderId")}
             onChange={(v) => setValue("orderId", v)}
           />
-          <FormField
+          <DatePickerField
             label="Pickup Date"
             id="a-pickup"
             value={get("pickupDate")}
@@ -435,7 +435,7 @@ function AgentScenarioFields({
             value={get("orderId")}
             onChange={(v) => setValue("orderId", v)}
           />
-          <FormField
+          <DatePickerField
             label="Pickup Date"
             id="a-pickup"
             value={get("pickupDate")}
@@ -488,7 +488,7 @@ function AgentScenarioFields({
             value={get("orderId")}
             onChange={(v) => setValue("orderId", v)}
           />
-          <FormField
+          <DatePickerField
             label="Estimated Delivery Date"
             id="a-delDate"
             value={get("deliveryDate")}
@@ -563,7 +563,7 @@ function AgentScenarioFields({
             value={get("orderId")}
             onChange={(v) => setValue("orderId", v)}
           />
-          <FormField
+          <DatePickerField
             label="Requested Delivery Date"
             id="a-reqDate"
             value={get("requestedDate")}
@@ -592,7 +592,7 @@ function AgentScenarioFields({
             value={get("itemName")}
             onChange={(v) => setValue("itemName", v)}
           />
-          <FormField
+          <DatePickerField
             label="Expected Completion Date"
             id="a-compDate"
             value={get("completionDate")}
