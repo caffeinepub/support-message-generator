@@ -14,11 +14,20 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import {
   COURIER_SCENARIO_LABELS,
+  type CourierIntent,
   type CourierScenarioId,
+  SCENARIO_INTENT,
   detectCourierScenario,
   generateCourierMessage,
 } from "@/lib/courierTemplates";
-import { Search, Truck } from "lucide-react";
+import {
+  AlertCircle,
+  Clock,
+  Package,
+  Search,
+  Truck,
+  XCircle,
+} from "lucide-react";
 import { useState } from "react";
 
 const ALL_COURIER_SCENARIOS: CourierScenarioId[] = [
@@ -39,6 +48,20 @@ const ALL_COURIER_SCENARIOS: CourierScenarioId[] = [
   "shipment-out-of-coverage",
 ];
 
+const INTENT_LABEL: Record<CourierIntent, string> = {
+  tracking: "Tracking",
+  delay: "Delay",
+  complaint: "Complaint",
+  cancellation: "Cancellation",
+};
+
+const INTENT_COLOR: Record<CourierIntent, string> = {
+  tracking: "bg-blue-500/20 text-blue-400 border-blue-500/30",
+  delay: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
+  complaint: "bg-red-500/20 text-red-400 border-red-500/30",
+  cancellation: "bg-orange-500/20 text-orange-400 border-orange-500/30",
+};
+
 export function CourierAgentTab() {
   const [input, setInput] = useState("");
   const [detectedScenario, setDetectedScenario] =
@@ -53,6 +76,10 @@ export function CourierAgentTab() {
   const activeScenario: CourierScenarioId | null = isManual
     ? (manualScenario as CourierScenarioId) || null
     : detectedScenario;
+
+  const activeIntent: CourierIntent | null = activeScenario
+    ? SCENARIO_INTENT[activeScenario]
+    : null;
 
   const setValue = (k: string, v: string) =>
     setValues((prev) => ({ ...prev, [k]: v }));
@@ -86,7 +113,7 @@ export function CourierAgentTab() {
         <div className="bg-card border border-border rounded-xl p-5 space-y-4">
           <div className="flex items-center gap-2 mb-1">
             <Truck className="w-4 h-4 text-primary" />
-            <h2 className="text-sm font-semibold">Courier Issue</h2>
+            <h2 className="text-sm font-semibold">Courier AI Agent</h2>
           </div>
 
           <div className="space-y-1.5">
@@ -94,13 +121,13 @@ export function CourierAgentTab() {
               htmlFor="courierMsg"
               className="text-xs font-medium text-muted-foreground uppercase tracking-wide"
             >
-              Paste customer message or describe the courier issue
+              Paste customer message
             </Label>
             <Textarea
               id="courierMsg"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="e.g. My order is showing delivered but I never received it..."
+              placeholder="e.g. My order shows delivered but I never received it..."
               className="min-h-[120px] text-sm text-foreground bg-input/50 resize-none"
               data-ocid="courier.customer_msg.textarea"
             />
@@ -113,10 +140,25 @@ export function CourierAgentTab() {
             data-ocid="courier.detect.primary_button"
           >
             <Search className="w-4 h-4" />
-            Detect Courier Issue
+            Detect Customer Intent
           </Button>
 
           <div className="flex items-center gap-2 flex-wrap">
+            {activeIntent && (
+              <Badge
+                className={`border text-xs flex items-center gap-1 ${INTENT_COLOR[activeIntent]}`}
+              >
+                {activeIntent === "tracking" && <Package className="w-3 h-3" />}
+                {activeIntent === "delay" && <Clock className="w-3 h-3" />}
+                {activeIntent === "complaint" && (
+                  <AlertCircle className="w-3 h-3" />
+                )}
+                {activeIntent === "cancellation" && (
+                  <XCircle className="w-3 h-3" />
+                )}
+                {INTENT_LABEL[activeIntent]}
+              </Badge>
+            )}
             {detectedScenario && !isManual && (
               <Badge className="bg-success/20 text-success border border-success/30 text-xs">
                 ✓ {COURIER_SCENARIO_LABELS[detectedScenario]} detected
@@ -124,11 +166,10 @@ export function CourierAgentTab() {
             )}
             {isManual && manualScenario && (
               <Badge className="bg-warning/20 text-warning border border-warning/30 text-xs">
-                ⚙ Manual:{" "}
-                {COURIER_SCENARIO_LABELS[manualScenario as CourierScenarioId]}
+                ⚙ {COURIER_SCENARIO_LABELS[manualScenario as CourierScenarioId]}
               </Badge>
             )}
-            {!detectedScenario && !isManual && (
+            {!activeScenario && (
               <span className="text-xs text-muted-foreground">
                 No issue detected yet
               </span>
@@ -196,11 +237,11 @@ export function CourierAgentTab() {
               <Truck className="w-7 h-7 text-primary/60" />
             </div>
             <p className="text-sm font-medium text-muted-foreground">
-              Courier expert responses
+              Intelligent courier responses
             </p>
-            <p className="text-xs text-muted-foreground mt-1 max-w-[200px]">
-              Paste a customer courier issue, detect the scenario, fill details,
-              and generate.
+            <p className="text-xs text-muted-foreground mt-1 max-w-[220px]">
+              Paste a customer message, detect intent, fill in the details, and
+              generate a warm, personalized reply.
             </p>
           </div>
         )}
@@ -378,7 +419,7 @@ function CourierScenarioFields({
             id="c-missingItems"
             value={get("missingItems")}
             onChange={(v) => setValue("missingItems", v)}
-            placeholder="Item 1\nItem 2"
+            placeholder={"Item 1\nItem 2"}
             multiline
           />
         </>
