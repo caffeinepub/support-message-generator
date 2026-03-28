@@ -188,6 +188,7 @@ function ScenarioFields({
               id="attempt1Date"
               value={get("attempt1Date")}
               onChange={(v) => setValue("attempt1Date", v)}
+              disabled={!!(get("attempt2Date") || get("attempt3Date"))}
               ocid={`${ocidScope}.attempt1Date.input`}
             />
             <FormField
@@ -196,6 +197,7 @@ function ScenarioFields({
               value={get("attempt1Remarks")}
               onChange={(v) => setValue("attempt1Remarks", v)}
               placeholder="Remarks"
+              disabled={!!(get("attempt2Date") || get("attempt3Date"))}
               ocid={`${ocidScope}.attempt1Remarks.input`}
             />
           </div>
@@ -205,7 +207,7 @@ function ScenarioFields({
               id="attempt2Date"
               value={get("attempt2Date")}
               onChange={(v) => setValue("attempt2Date", v)}
-              disabled={!get("attempt1Date")}
+              disabled={!!(get("attempt1Date") || get("attempt3Date"))}
               ocid={`${ocidScope}.attempt2Date.input`}
             />
             <FormField
@@ -214,7 +216,7 @@ function ScenarioFields({
               value={get("attempt2Remarks")}
               onChange={(v) => setValue("attempt2Remarks", v)}
               placeholder="Remarks"
-              disabled={!get("attempt1Date")}
+              disabled={!!(get("attempt1Date") || get("attempt3Date"))}
               ocid={`${ocidScope}.attempt2Remarks.input`}
             />
           </div>
@@ -224,7 +226,7 @@ function ScenarioFields({
               id="attempt3Date"
               value={get("attempt3Date")}
               onChange={(v) => setValue("attempt3Date", v)}
-              disabled={!get("attempt2Date")}
+              disabled={!!(get("attempt1Date") || get("attempt2Date"))}
               ocid={`${ocidScope}.attempt3Date.input`}
             />
             <FormField
@@ -233,7 +235,7 @@ function ScenarioFields({
               value={get("attempt3Remarks")}
               onChange={(v) => setValue("attempt3Remarks", v)}
               placeholder="Remarks"
-              disabled={!get("attempt2Date")}
+              disabled={!!(get("attempt1Date") || get("attempt2Date"))}
               ocid={`${ocidScope}.attempt3Remarks.input`}
             />
           </div>
