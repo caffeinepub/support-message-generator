@@ -4,7 +4,7 @@ import { useState } from "react";
 
 const SUBTABS = [
   { id: "delivery-failed", label: "Delivery Failed" },
-  { id: "damaged-unit", label: "Damaged Unit Received" },
+  { id: "damaged-unit", label: "Damage Unit" },
   { id: "wrong-unit", label: "Wrong Unit Received" },
   { id: "return-cod", label: "Return-COD" },
   { id: "return-prepaid", label: "Return-Prepaid" },

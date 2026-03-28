@@ -45,6 +45,7 @@ const ALL_SCENARIOS: ScenarioId[] = [
   "return-process",
   "cod-refund-process",
   "prepaid-refund-process",
+  "how-to-place-order",
 ];
 
 const SUB_CATEGORIES = [
@@ -664,6 +665,7 @@ function AgentScenarioFields({
     case "return-process":
     case "cod-refund-process":
     case "prepaid-refund-process":
+    case "how-to-place-order":
       return (
         <FormField
           label="Customer Name"

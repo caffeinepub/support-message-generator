@@ -21,7 +21,8 @@ export type ScenarioId =
   | "refund-policy"
   | "return-process"
   | "cod-refund-process"
-  | "prepaid-refund-process";
+  | "prepaid-refund-process"
+  | "how-to-place-order";
 
 export const SCENARIO_LABELS: Record<ScenarioId, string> = {
   "order-confirmation": "Order Confirmation Not Received",
@@ -47,6 +48,7 @@ export const SCENARIO_LABELS: Record<ScenarioId, string> = {
   "return-process": "How Return Process Works",
   "cod-refund-process": "How Refund is Done for COD",
   "prepaid-refund-process": "How Refund is Done for Prepaid",
+  "how-to-place-order": "How to Place the Order on Website",
 };
 
 function buildItemList(itemsText: string): string {
@@ -390,6 +392,27 @@ Feel free to contact us if you need any further assistance!
 Thank you!
 Team LamaStore`;
 
+    case "how-to-place-order":
+      return `Dear ${name},
+
+Thank you for reaching out! Placing an order on our website is very simple. Just follow these easy steps:
+
+1. Visit our website and browse the products you like.
+2. Select the product you want to buy and choose your preferred size and color (if available).
+3. Click on the "Add to Cart" button.
+4. Once you have added all the items, click on the "Cart" icon at the top of the page.
+5. Review your order and click "Proceed to Checkout".
+6. Enter your delivery address and contact details.
+7. Choose your preferred payment method — UPI, Credit/Debit Card, Net Banking, or Cash on Delivery (COD).
+8. Click "Place Order" to confirm your purchase.
+
+You will receive an order confirmation on your registered email or phone number shortly after placing the order.
+
+If you face any difficulty while placing the order, feel free to contact us and we will be happy to assist you!
+
+Thank you!
+Team LamaStore`;
+
     default:
       return "";
   }
@@ -471,6 +494,15 @@ export function detectScenario(text: string): ScenarioId | null {
     t.includes("refund for online")
   )
     return "prepaid-refund-process";
+  if (
+    t.includes("how to place") ||
+    t.includes("how to order") ||
+    t.includes("how do i order") ||
+    t.includes("place an order") ||
+    t.includes("how to buy") ||
+    t.includes("ordering process")
+  )
+    return "how-to-place-order";
 
   // Order-specific scenarios
   if (t.includes("return") && (t.includes("cod") || t.includes("cash")))
