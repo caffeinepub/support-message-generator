@@ -47,6 +47,45 @@ const ALL_SCENARIOS: ScenarioId[] = [
   "prepaid-refund-process",
 ];
 
+const SUB_CATEGORIES = [
+  "Solid Tee",
+  "Printed Tee",
+  "Maternity with Center ZIP",
+  "Maternity With Side ZIP",
+  "Maternity with Button",
+];
+
+function SubCategorySelect({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+        Sub Category
+      </Label>
+      <Select value={value} onValueChange={onChange}>
+        <SelectTrigger
+          className="text-sm bg-input/50"
+          data-ocid="agent.subcategory.select"
+        >
+          <SelectValue placeholder="Select sub category..." />
+        </SelectTrigger>
+        <SelectContent>
+          {SUB_CATEGORIES.map((cat) => (
+            <SelectItem key={cat} value={cat}>
+              {cat}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
+}
+
 export function CSAgentTab() {
   const [input, setInput] = useState("");
   const [detectedScenario, setDetectedScenario] = useState<ScenarioId | null>(
@@ -605,6 +644,21 @@ function AgentScenarioFields({
     case "what-material":
     case "tee-length":
     case "size-variants":
+      return (
+        <>
+          <FormField
+            label="Customer Name"
+            id="a-name"
+            value={get("name")}
+            onChange={(v) => setValue("name", v)}
+            placeholder="Customer name"
+          />
+          <SubCategorySelect
+            value={get("subCategory")}
+            onChange={(v) => setValue("subCategory", v)}
+          />
+        </>
+      );
     case "discount-available":
     case "refund-policy":
     case "return-process":

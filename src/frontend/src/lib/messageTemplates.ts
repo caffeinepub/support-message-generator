@@ -64,6 +64,7 @@ export function generateMessage(
 ): string {
   const name = v.name || "[Customer Name]";
   const orderId = v.orderId || "[Order ID]";
+  const subCat = v.subCategory || "";
 
   switch (scenario) {
     case "order-confirmation":
@@ -196,7 +197,9 @@ Team LamaStore`;
     case "order-cancellation":
       return `Dear ${name},
 
-We have received your cancellation request for Order ID: ${orderId} for the "${v.itemName || "[Item Name]"}".\n\nWe are currently processing your request and will notify you once it is successfully cancelled.
+We have received your cancellation request for Order ID: ${orderId} for the "${v.itemName || "[Item Name]"}".
+
+We are currently processing your request and will notify you once it is successfully cancelled.
 
 Thank you!
 Team LamaStore`;
@@ -254,7 +257,7 @@ Team LamaStore`;
     case "bad-quality":
       return `Dear ${name},
 
-Thank you for reaching out and sharing your feedback. We sincerely apologize that the product did not meet your quality expectations.
+Thank you for reaching out and sharing your feedback. We sincerely apologize that the ${subCat ? `${subCat}` : "product"} did not meet your quality expectations.
 
 We take quality concerns very seriously. Kindly share clear photos of the item along with your Order ID so our team can review the issue and assist you with the best possible resolution.
 
@@ -276,7 +279,7 @@ Team LamaStore`;
 
 Thank you for your question!
 
-Our T-shirts are made from 100% premium combed cotton, which is soft, breathable, and durable — perfect for everyday wear.
+${subCat ? `Our ${subCat}` : "Our T-shirts"} are made from 100% premium combed cotton, which is soft, breathable, and durable — perfect for everyday wear.
 
 If you have any more questions about the product, feel free to ask!
 
@@ -288,7 +291,7 @@ Team LamaStore`;
 
 Thank you for your question!
 
-The length of our T-shirts varies by size:
+The length of ${subCat ? `our ${subCat}` : "our T-shirts"} varies by size:
 - S: 27 inches
 - M: 28 inches
 - L: 29 inches
@@ -305,7 +308,7 @@ Team LamaStore`;
 
 Thank you for your interest!
 
-Yes, our T-shirts are available in the following sizes: S, M, L, XL, and XXL.
+Yes, ${subCat ? `our ${subCat}` : "our T-shirts"} are available in the following sizes: S, M, L, XL, and XXL.
 
 Please check the product page for current availability of each size. If a specific size is not available, you can contact us and we will try our best to assist you.
 
