@@ -51,12 +51,9 @@ export default {
           DEFAULT: "oklch(var(--card))",
           foreground: "oklch(var(--card-foreground))",
         },
-        success: {
-          DEFAULT: "oklch(var(--success))",
-        },
-        warning: {
-          DEFAULT: "oklch(var(--warning))",
-        },
+        success: { DEFAULT: "oklch(var(--success))" },
+        warning: { DEFAULT: "oklch(var(--warning))" },
+        nav: { DEFAULT: "oklch(var(--nav-bg))" },
         chart: {
           1: "oklch(var(--chart-1))",
           2: "oklch(var(--chart-2))",

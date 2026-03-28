@@ -8,17 +8,47 @@
 
 import { IDL } from '@icp-sdk/core/candid';
 
+export const SessionId = IDL.Text;
+export const Role = IDL.Variant({ 'agent' : IDL.Null, 'user' : IDL.Null });
+export const Message = IDL.Record({
+  'content' : IDL.Text,
+  'role' : Role,
+  'timestamp' : IDL.Int,
+});
+
 export const idlService = IDL.Service({
-  'getValue' : IDL.Func([IDL.Text], [IDL.Opt(IDL.Text)], []),
-  'setValue' : IDL.Func([IDL.Text, IDL.Text], [], []),
+  'addMessage' : IDL.Func([SessionId, Role, IDL.Text], [IDL.Bool], []),
+  'addUserMessageWithResponse' : IDL.Func(
+      [SessionId, IDL.Text],
+      [IDL.Text],
+      [],
+    ),
+  'clearSession' : IDL.Func([SessionId], [IDL.Bool], []),
+  'createSession' : IDL.Func([], [SessionId], []),
+  'getSessionMessages' : IDL.Func([SessionId], [IDL.Vec(Message)], ['query']),
 });
 
 export const idlInitArgs = [];
 
 export const idlFactory = ({ IDL }) => {
+  const SessionId = IDL.Text;
+  const Role = IDL.Variant({ 'agent' : IDL.Null, 'user' : IDL.Null });
+  const Message = IDL.Record({
+    'content' : IDL.Text,
+    'role' : Role,
+    'timestamp' : IDL.Int,
+  });
+  
   return IDL.Service({
-    'getValue' : IDL.Func([IDL.Text], [IDL.Opt(IDL.Text)], []),
-    'setValue' : IDL.Func([IDL.Text, IDL.Text], [], []),
+    'addMessage' : IDL.Func([SessionId, Role, IDL.Text], [IDL.Bool], []),
+    'addUserMessageWithResponse' : IDL.Func(
+        [SessionId, IDL.Text],
+        [IDL.Text],
+        [],
+      ),
+    'clearSession' : IDL.Func([SessionId], [IDL.Bool], []),
+    'createSession' : IDL.Func([], [SessionId], []),
+    'getSessionMessages' : IDL.Func([SessionId], [IDL.Vec(Message)], ['query']),
   });
 };
 
