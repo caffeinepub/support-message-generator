@@ -1,3 +1,4 @@
+import { DatePickerField } from "@/components/DatePickerField";
 import { FormField } from "@/components/FormField";
 import { MessageOutput } from "@/components/MessageOutput";
 import { Button } from "@/components/ui/button";
@@ -93,12 +94,11 @@ function ScenarioFields({
             placeholder="e.g. #12345"
             ocid={`${ocidScope}.orderId.input`}
           />
-          <FormField
+          <DatePickerField
             label="Order Date"
             id="orderDate"
             value={get("orderDate")}
             onChange={(v) => setValue("orderDate", v)}
-            placeholder="e.g. 28 March, 2026"
             ocid={`${ocidScope}.orderDate.input`}
           />
         </>
@@ -167,12 +167,11 @@ function ScenarioFields({
             placeholder="e.g. #29509"
             ocid={`${ocidScope}.orderId.input`}
           />
-          <FormField
+          <DatePickerField
             label="Order Date"
             id="orderDate"
             value={get("orderDate")}
             onChange={(v) => setValue("orderDate", v)}
-            placeholder="e.g. 20 March, 2026"
             ocid={`${ocidScope}.orderDate.input`}
           />
           <FormField
@@ -184,12 +183,11 @@ function ScenarioFields({
             ocid={`${ocidScope}.itemName.input`}
           />
           <div className="grid grid-cols-2 gap-2">
-            <FormField
+            <DatePickerField
               label="1st Attempt Date"
               id="attempt1Date"
               value={get("attempt1Date")}
               onChange={(v) => setValue("attempt1Date", v)}
-              placeholder="Date"
               ocid={`${ocidScope}.attempt1Date.input`}
             />
             <FormField
@@ -202,12 +200,11 @@ function ScenarioFields({
             />
           </div>
           <div className="grid grid-cols-2 gap-2">
-            <FormField
+            <DatePickerField
               label="2nd Attempt Date"
               id="attempt2Date"
               value={get("attempt2Date")}
               onChange={(v) => setValue("attempt2Date", v)}
-              placeholder="Date"
               disabled={!get("attempt1Date")}
               ocid={`${ocidScope}.attempt2Date.input`}
             />
@@ -222,12 +219,11 @@ function ScenarioFields({
             />
           </div>
           <div className="grid grid-cols-2 gap-2">
-            <FormField
+            <DatePickerField
               label="3rd Attempt Date"
               id="attempt3Date"
               value={get("attempt3Date")}
               onChange={(v) => setValue("attempt3Date", v)}
-              placeholder="Date"
               disabled={!get("attempt2Date")}
               ocid={`${ocidScope}.attempt3Date.input`}
             />
@@ -328,12 +324,11 @@ function ScenarioFields({
             placeholder="e.g. #29509"
             ocid={`${ocidScope}.orderId.input`}
           />
-          <FormField
+          <DatePickerField
             label="Pickup Date"
             id="pickupDate"
             value={get("pickupDate")}
             onChange={(v) => setValue("pickupDate", v)}
-            placeholder="e.g. March 28, 2026"
             ocid={`${ocidScope}.pickupDate.input`}
           />
           <FormField
@@ -413,12 +408,11 @@ function ScenarioFields({
             placeholder="e.g. #29162"
             ocid={`${ocidScope}.orderId.input`}
           />
-          <FormField
+          <DatePickerField
             label="Pickup Date"
             id="pickupDate"
             value={get("pickupDate")}
             onChange={(v) => setValue("pickupDate", v)}
-            placeholder="e.g. 28 March, 2026"
             ocid={`${ocidScope}.pickupDate.input`}
           />
           <FormField
@@ -480,12 +474,11 @@ function ScenarioFields({
             placeholder="e.g. #12345"
             ocid={`${ocidScope}.orderId.input`}
           />
-          <FormField
+          <DatePickerField
             label="Estimated Delivery Date"
             id="deliveryDate"
             value={get("deliveryDate")}
             onChange={(v) => setValue("deliveryDate", v)}
-            placeholder="e.g. 2 April, 2026"
             ocid={`${ocidScope}.deliveryDate.input`}
           />
         </>
@@ -575,12 +568,11 @@ function ScenarioFields({
             placeholder="e.g. #12345"
             ocid={`${ocidScope}.orderId.input`}
           />
-          <FormField
+          <DatePickerField
             label="Requested Delivery Date"
             id="requestedDate"
             value={get("requestedDate")}
             onChange={(v) => setValue("requestedDate", v)}
-            placeholder="e.g. 30 March, 2026"
             ocid={`${ocidScope}.requestedDate.input`}
           />
         </>
@@ -612,12 +604,11 @@ function ScenarioFields({
             placeholder="e.g. Custom Print Tee"
             ocid={`${ocidScope}.itemName.input`}
           />
-          <FormField
+          <DatePickerField
             label="Expected Completion Date"
             id="completionDate"
             value={get("completionDate")}
             onChange={(v) => setValue("completionDate", v)}
-            placeholder="e.g. 5 April, 2026"
             ocid={`${ocidScope}.completionDate.input`}
           />
         </>

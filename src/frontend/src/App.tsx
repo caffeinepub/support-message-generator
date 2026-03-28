@@ -1,9 +1,10 @@
 import { CSAgentTab } from "@/components/CSAgentTab";
+import { CourierAgentTab } from "@/components/CourierAgentTab";
 import { EshopboxTab } from "@/components/EshopboxTab";
 import { OrdersRequestTab } from "@/components/OrdersRequestTab";
 import { ShopifyTab } from "@/components/ShopifyTab";
 import { Toaster } from "@/components/ui/sonner";
-import { Bot, ClipboardList, Package, ShoppingBag } from "lucide-react";
+import { Bot, ClipboardList, Package, ShoppingBag, Truck } from "lucide-react";
 import { useState } from "react";
 
 const MAIN_TABS = [
@@ -11,6 +12,7 @@ const MAIN_TABS = [
   { id: "eshopbox", label: "Eshopbox", icon: Package },
   { id: "orders", label: "Orders Request", icon: ClipboardList },
   { id: "agent", label: "CS Agent", icon: Bot },
+  { id: "courier", label: "Courier Expert", icon: Truck },
 ];
 
 export default function App() {
@@ -41,7 +43,7 @@ export default function App() {
 
       <div className="border-b border-border bg-card/50">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="flex gap-1 pt-2">
+          <div className="flex gap-1 pt-2 overflow-x-auto">
             {MAIN_TABS.map((tab) => {
               const Icon = tab.icon;
               const active = mainTab === tab.id;
@@ -51,7 +53,7 @@ export default function App() {
                   key={tab.id}
                   data-ocid={`nav.${tab.id}.tab`}
                   onClick={() => setMainTab(tab.id)}
-                  className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-t-lg border-b-2 transition-all ${
+                  className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-t-lg border-b-2 transition-all whitespace-nowrap ${
                     active
                       ? "border-primary text-primary bg-primary/10"
                       : "border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/50"
@@ -71,6 +73,7 @@ export default function App() {
         {mainTab === "eshopbox" && <EshopboxTab />}
         {mainTab === "orders" && <OrdersRequestTab />}
         {mainTab === "agent" && <CSAgentTab />}
+        {mainTab === "courier" && <CourierAgentTab />}
       </main>
 
       <footer className="border-t border-border py-4 text-center">

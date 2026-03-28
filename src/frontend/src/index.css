@@ -56,7 +56,15 @@
 
   /* Ensure typed text is always visible in all input/textarea fields */
   input,
-  textarea {
-    color: oklch(var(--foreground)) !important;
+  textarea,
+  input[type="text"],
+  input[type="email"],
+  input[type="number"],
+  input[type="password"],
+  input[type="search"],
+  input[type="tel"],
+  input[type="url"] {
+    color: #e8eaf0 !important;
+    -webkit-text-fill-color: #e8eaf0 !important;
   }
 }
