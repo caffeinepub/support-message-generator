@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -8,47 +8,42 @@
   :root {
     --radius: 0.5rem;
 
-    /* Page background: #F3F6F9 -> oklch ~0.965 0.012 240 */
-    --background: 0.965 0.012 240;
-    /* Header/cards: #FFFFFF */
-    --card: 1 0 0;
-    --card-foreground: 0.145 0 0;
-    --popover: 1 0 0;
-    --popover-foreground: 0.145 0 0;
-    /* Primary accent: #1F6FBE -> oklch ~0.48 0.14 240 */
-    --primary: 0.48 0.14 240;
-    --primary-foreground: 1 0 0;
-    --secondary: 0.97 0 0;
-    --secondary-foreground: 0.205 0 0;
-    /* Muted text: #6B7280 -> oklch ~0.556 0.015 264 */
-    --muted: 0.97 0.005 240;
-    --muted-foreground: 0.556 0.015 264;
-    --accent: 0.93 0.02 240;
-    --accent-foreground: 0.48 0.14 240;
-    --destructive: 0.577 0.245 27.325;
-    --destructive-foreground: 0.985 0 0;
-    /* Borders: #D9E1EA -> oklch ~0.9 0.02 240 */
-    --border: 0.9 0.02 240;
-    --input: 0.9 0.02 240;
-    --ring: 0.48 0.14 240;
-    /* Preview bubble: #EEF2F6 -> oklch ~0.95 0.015 240 */
-    --preview-bubble: 0.95 0.015 240;
-    /* Foreground: #111827 -> oklch ~0.145 0 0 (near black) */
-    --foreground: 0.145 0 0;
+    /* Dark theme */
+    --background: 0.13 0.018 255;
+    --foreground: 0.92 0.01 240;
+    --card: 0.17 0.02 255;
+    --card-foreground: 0.92 0.01 240;
+    --popover: 0.17 0.02 255;
+    --popover-foreground: 0.92 0.01 240;
+    --primary: 0.72 0.18 195;
+    --primary-foreground: 0.1 0.01 255;
+    --secondary: 0.22 0.025 255;
+    --secondary-foreground: 0.75 0.01 240;
+    --muted: 0.2 0.02 255;
+    --muted-foreground: 0.58 0.015 255;
+    --accent: 0.24 0.03 255;
+    --accent-foreground: 0.72 0.18 195;
+    --destructive: 0.55 0.22 27;
+    --destructive-foreground: 0.98 0 0;
+    --border: 0.26 0.025 255;
+    --input: 0.22 0.025 255;
+    --ring: 0.72 0.18 195;
+    --success: 0.72 0.18 150;
+    --warning: 0.82 0.18 80;
 
     --chart-1: 0.646 0.222 41.116;
     --chart-2: 0.6 0.118 184.704;
     --chart-3: 0.398 0.07 227.392;
     --chart-4: 0.828 0.189 84.429;
     --chart-5: 0.769 0.188 70.08;
-    --sidebar: 1 0 0;
-    --sidebar-foreground: 0.145 0 0;
-    --sidebar-primary: 0.48 0.14 240;
-    --sidebar-primary-foreground: 1 0 0;
-    --sidebar-accent: 0.97 0 0;
-    --sidebar-accent-foreground: 0.205 0 0;
-    --sidebar-border: 0.9 0.02 240;
-    --sidebar-ring: 0.48 0.14 240;
+    --sidebar: 0.15 0.02 255;
+    --sidebar-foreground: 0.92 0.01 240;
+    --sidebar-primary: 0.72 0.18 195;
+    --sidebar-primary-foreground: 0.1 0.01 255;
+    --sidebar-accent: 0.22 0.025 255;
+    --sidebar-accent-foreground: 0.75 0.01 240;
+    --sidebar-border: 0.26 0.025 255;
+    --sidebar-ring: 0.72 0.18 195;
   }
 
   * {
@@ -56,6 +51,6 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: "Inter", sans-serif;
+    font-family: "Plus Jakarta Sans", sans-serif;
   }
 }

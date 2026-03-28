@@ -8,4 +8,6 @@ export interface None {
 }
 export type Option<T> = Some<T> | None;
 export interface backendInterface {
+    getValue(key: string): Promise<string | null>;
+    setValue(key: string, value: string): Promise<void>;
 }
