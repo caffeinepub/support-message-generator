@@ -109,7 +109,7 @@ export function CSAgentTab() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="e.g. Hi, I want to return my order, I paid online..."
-              className="min-h-[120px] text-sm bg-input/50 resize-none"
+              className="min-h-[120px] text-sm text-foreground bg-input/50 resize-none"
               data-ocid="agent.customer_msg.textarea"
             />
           </div>

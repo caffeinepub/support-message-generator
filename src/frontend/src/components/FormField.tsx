@@ -41,7 +41,7 @@ export function FormField({
           placeholder={placeholder}
           disabled={disabled}
           data-ocid={ocid}
-          className="text-sm bg-input/50 resize-none min-h-[80px]"
+          className="text-sm text-foreground bg-input/50 resize-none min-h-[80px]"
         />
       ) : (
         <Input
@@ -52,7 +52,7 @@ export function FormField({
           placeholder={placeholder}
           disabled={disabled}
           data-ocid={ocid}
-          className="text-sm bg-input/50"
+          className="text-sm text-foreground bg-input/50"
         />
       )}
     </div>
