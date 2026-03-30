@@ -12,6 +12,8 @@ export type ScenarioId =
   | "cancelled"
   | "urgent-delivery"
   | "under-production"
+  | "return-request"
+  | "refund-status"
   | "bad-quality"
   | "price-too-high"
   | "what-material"
@@ -25,7 +27,7 @@ export type ScenarioId =
   | "how-to-place-order";
 
 export const SCENARIO_LABELS: Record<ScenarioId, string> = {
-  "order-confirmation": "Order Confirmation Not Received",
+  "order-confirmation": "Confirmation Pending",
   "abandoned-checkout": "Abandoned Checkout",
   "delivery-failed": "Delivery Failed",
   "damaged-unit": "Damaged Unit Received",
@@ -38,6 +40,8 @@ export const SCENARIO_LABELS: Record<ScenarioId, string> = {
   cancelled: "Cancelled",
   "urgent-delivery": "Urgent Delivery",
   "under-production": "Order Under Production",
+  "return-request": "Return Request",
+  "refund-status": "Refund Status",
   "bad-quality": "Bad Quality Complaint",
   "price-too-high": "Price Too High",
   "what-material": "What is the Material",
@@ -72,11 +76,13 @@ export function generateMessage(
     case "order-confirmation":
       return `Dear ${name},
 
-Thank you for your order! We understand you haven't received your order confirmation for Order ID: ${orderId} placed on ${v.orderDate || "[Order Date]"}.
+Thank you for placing your order with us!
 
-We've checked and your order is confirmed in our system. The confirmation email may have gone to your spam/junk folder. Please check there.
+We wanted to inform you that your Order ID: ${orderId} for "${v.itemName || "[Item Name]"}" placed on ${v.orderDate || "[Order Date]"} is currently in Confirmation Pending status.
 
-If you still can't find it, we'll be happy to resend it to your registered email address.
+Our team is reviewing your order and it will be confirmed shortly. You will receive a confirmation update once the order is processed.
+
+We appreciate your patience and will keep you updated.
 
 Thank you!
 Team LamaStore`;
@@ -200,8 +206,7 @@ Team LamaStore`;
     case "order-cancellation":
       return `Dear ${name},
 
-We have received your cancellation request for Order ID: ${orderId} for the "${v.itemName || "[Item Name]"}".
-
+We have received your cancellation request for Order ID: ${orderId} for the "${v.itemName || "[Item Name]"}".\n
 We are currently processing your request and will notify you once it is successfully cancelled.
 
 Thank you!
@@ -253,6 +258,37 @@ Team LamaStore`;
 Thank you for your order! We wanted to update you that your Order ID: ${orderId} for "${v.itemName || "[Item Name]"}" is currently under production.
 
 Your order is expected to be ready by ${v.completionDate || "[Expected Completion Date]"}. We will notify you once it is dispatched.
+
+Thank you!
+Team LamaStore`;
+
+    case "return-request": {
+      const itemList = buildItemList(v.itemsToReturn || "");
+      return `Dear ${name},
+
+We have received your return request for Order ID: ${orderId}.
+
+Reason for Return: ${v.returnReason || "[Reason]"}
+
+Items to be returned:
+${itemList || "[Items to return]"}
+
+We will arrange a reverse pickup on ${v.pickupDate || "[Pickup Date]"}. Please ensure the items are packed securely and ready for pickup.
+
+Once the items are received at our warehouse, we will process your request within 5-7 working days.
+
+Thank you!
+Team LamaStore`;
+    }
+
+    case "refund-status":
+      return `Dear ${name},
+
+Thank you for reaching out regarding your refund for Order ID: ${orderId}.
+
+We are pleased to inform you that your refund of Rs. ${v.refundAmount || "[Amount]"} has been ${v.refundStatus || "initiated"} and will be credited to your ${v.paymentMode || "source account"} within ${v.expectedDays || "5-7 working days"}.
+
+If you have not received the refund after the mentioned timeline, please do not hesitate to contact us and we will be happy to assist you.
 
 Thank you!
 Team LamaStore`;
@@ -421,7 +457,6 @@ Team LamaStore`;
 export function detectScenario(text: string): ScenarioId | null {
   const t = text.toLowerCase();
 
-  // FAQ / policy scenarios — check before generic return checks
   if (
     t.includes("bad quality") ||
     t.includes("poor quality") ||
@@ -504,7 +539,6 @@ export function detectScenario(text: string): ScenarioId | null {
   )
     return "how-to-place-order";
 
-  // Order-specific scenarios
   if (t.includes("return") && (t.includes("cod") || t.includes("cash")))
     return "return-cod";
   if (
@@ -560,6 +594,14 @@ export function detectScenario(text: string): ScenarioId | null {
     t.includes("manufacturing")
   )
     return "under-production";
+  if (
+    t.includes("refund status") ||
+    t.includes("where is my refund") ||
+    t.includes("refund not received")
+  )
+    return "refund-status";
+  if (t.includes("return request") || t.includes("want to return"))
+    return "return-request";
   if (t.includes("cancelled")) return "cancelled";
   if (t.includes("return")) return "return-prepaid";
 

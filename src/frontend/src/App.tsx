@@ -482,19 +482,15 @@ export default function App() {
 }
 
 // ─── Dashboard View ─────────────────────────────────────────────────────────
-import { CSAgentTab } from "@/components/CSAgentTab";
-import { CourierAgentTab } from "@/components/CourierAgentTab";
 import { OrdersRequestTab } from "@/components/OrdersRequestTab";
-import { ArrowLeft, ClipboardList, Truck } from "lucide-react";
+import { ArrowLeft, ClipboardList } from "lucide-react";
 
 const DASH_TABS = [
   { id: "orders", label: "Orders Request", icon: ClipboardList },
-  { id: "agent", label: "CS Agent", icon: Bot },
-  { id: "courier", label: "Courier Expert", icon: Truck },
 ];
 
 function DashboardView({ onBack }: { onBack: () => void }) {
-  const [activeTab, setActiveTab] = useState("agent");
+  const [activeTab, setActiveTab] = useState("orders");
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -559,8 +555,6 @@ function DashboardView({ onBack }: { onBack: () => void }) {
 
       <main className="flex-1 max-w-7xl mx-auto w-full px-4 py-6">
         {activeTab === "orders" && <OrdersRequestTab />}
-        {activeTab === "agent" && <CSAgentTab />}
-        {activeTab === "courier" && <CourierAgentTab />}
       </main>
 
       <footer className="border-t border-border py-4 text-center">

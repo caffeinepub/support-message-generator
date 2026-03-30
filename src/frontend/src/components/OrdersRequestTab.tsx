@@ -9,6 +9,10 @@ const SUBTABS = [
   { id: "cancelled", label: "Cancelled" },
   { id: "urgent-delivery", label: "Urgent Delivery" },
   { id: "under-production", label: "Order Under Production" },
+  { id: "delivery-failed", label: "Delivery Failed" },
+  { id: "order-confirmation", label: "Order Confirmation" },
+  { id: "return-request", label: "Return Request" },
+  { id: "refund-status", label: "Refund Status" },
 ];
 
 export function OrdersRequestTab() {

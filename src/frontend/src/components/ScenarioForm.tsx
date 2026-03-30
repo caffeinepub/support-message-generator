@@ -94,6 +94,14 @@ function ScenarioFields({
             placeholder="e.g. #12345"
             ocid={`${ocidScope}.orderId.input`}
           />
+          <FormField
+            label="Item Name"
+            id="itemName"
+            value={get("itemName")}
+            onChange={(v) => setValue("itemName", v)}
+            placeholder="e.g. Blue Oversized Tee"
+            ocid={`${ocidScope}.itemName.input`}
+          />
           <DatePickerField
             label="Order Date"
             id="orderDate"
@@ -612,6 +620,104 @@ function ScenarioFields({
             value={get("completionDate")}
             onChange={(v) => setValue("completionDate", v)}
             ocid={`${ocidScope}.completionDate.input`}
+          />
+        </>
+      );
+    case "return-request":
+      return (
+        <>
+          <FormField
+            label="Customer Name"
+            id="name"
+            value={get("name")}
+            onChange={(v) => setValue("name", v)}
+            placeholder="e.g. Yash Patel"
+            ocid={`${ocidScope}.name.input`}
+          />
+          <FormField
+            label="Order ID"
+            id="orderId"
+            value={get("orderId")}
+            onChange={(v) => setValue("orderId", v)}
+            placeholder="e.g. #12345"
+            ocid={`${ocidScope}.orderId.input`}
+          />
+          <FormField
+            label="Reason for Return"
+            id="returnReason"
+            value={get("returnReason")}
+            onChange={(v) => setValue("returnReason", v)}
+            placeholder="e.g. Wrong size received"
+            ocid={`${ocidScope}.returnReason.input`}
+          />
+          <DatePickerField
+            label="Pickup Date"
+            id="pickupDate"
+            value={get("pickupDate")}
+            onChange={(v) => setValue("pickupDate", v)}
+            ocid={`${ocidScope}.pickupDate.input`}
+          />
+          <FormField
+            label="Items to Return (one per line)"
+            id="itemsToReturn"
+            value={get("itemsToReturn")}
+            onChange={(v) => setValue("itemsToReturn", v)}
+            placeholder="Blue Tee&#10;White Polo"
+            multiline
+            ocid={`${ocidScope}.itemsToReturn.textarea`}
+          />
+        </>
+      );
+    case "refund-status":
+      return (
+        <>
+          <FormField
+            label="Customer Name"
+            id="name"
+            value={get("name")}
+            onChange={(v) => setValue("name", v)}
+            placeholder="e.g. Rahul Sharma"
+            ocid={`${ocidScope}.name.input`}
+          />
+          <FormField
+            label="Order ID"
+            id="orderId"
+            value={get("orderId")}
+            onChange={(v) => setValue("orderId", v)}
+            placeholder="e.g. #12345"
+            ocid={`${ocidScope}.orderId.input`}
+          />
+          <FormField
+            label="Refund Amount (Rs.)"
+            id="refundAmount"
+            value={get("refundAmount")}
+            onChange={(v) => setValue("refundAmount", v)}
+            placeholder="e.g. 1499"
+            ocid={`${ocidScope}.refundAmount.input`}
+          />
+          <FormField
+            label="Refund Status"
+            id="refundStatus"
+            value={get("refundStatus")}
+            onChange={(v) => setValue("refundStatus", v)}
+            placeholder="e.g. initiated / processed / credited"
+            ocid={`${ocidScope}.refundStatus.input`}
+          />
+          <FormField
+            label="Payment Mode"
+            id="paymentMode"
+            value={get("paymentMode")}
+            onChange={(v) => setValue("paymentMode", v)}
+            placeholder="e.g. source account / bank account / UPI"
+            ocid={`${ocidScope}.paymentMode.input`}
+          />
+          <FormField
+            label="Expected Days"
+            id="expectedDays"
+            value={get("expectedDays")}
+            onChange={(v) => setValue("expectedDays", v)}
+            placeholder="e.g. 5-7 working days"
+            ocid={`${ocidScope}.expectedDays.input`}
           />
         </>
       );
