@@ -18,9 +18,12 @@ export enum Role {
     user = "user"
 }
 export interface backendInterface {
+    addInventoryItem(sku: string, units: bigint): Promise<boolean>;
     addMessage(sessionId: SessionId, role: Role, content: string): Promise<boolean>;
     addUserMessageWithResponse(sessionId: SessionId, userContent: string): Promise<string>;
+    checkInventory(sku: string): Promise<bigint | null>;
     clearSession(sessionId: SessionId): Promise<boolean>;
     createSession(): Promise<SessionId>;
+    getAllInventory(): Promise<Array<[string, bigint]>>;
     getSessionMessages(sessionId: SessionId): Promise<Array<Message>>;
 }

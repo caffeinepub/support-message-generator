@@ -5,11 +5,10 @@ import Iter "mo:core/Iter";
 import Nat "mo:core/Nat";
 import Array "mo:core/Array";
 import Int "mo:core/Int";
-
 import List "mo:core/List";
+import Migration "migration";
 
-// specify the data migration function in with-clause
-
+(with migration = Migration.run)
 actor {
   type Role = {
     #user;
@@ -27,6 +26,10 @@ actor {
   type SessionId = Text;
 
   let chatSessions = Map.empty<SessionId, ChatHistory>();
+
+  // Persistent inventory map (sku -> units)
+  let inventory = Map.empty<Text, Nat>();
+  // Pre-seed sample SKUs (commented for actual deployment, seed with persistent data using migration)
 
   func createMessage(role : Role, content : Text) : Message {
     {
@@ -59,13 +62,10 @@ actor {
   };
 
   // Add user message and generate agent response
-  // Returns agent message or empty Text on failure (for that session)
   public shared ({ caller }) func addUserMessageWithResponse(sessionId : SessionId, userContent : Text) : async Text {
     let userMessage = createMessage(#user, userContent);
     switch (chatSessions.get(sessionId)) {
-      case (null) {
-        "";
-      };
+      case (null) { "" };
       case (?history) {
         let updatedHistory = history.clone();
         updatedHistory.add(userMessage);
@@ -82,9 +82,7 @@ actor {
   public query ({ caller }) func getSessionMessages(sessionId : SessionId) : async [Message] {
     switch (chatSessions.get(sessionId)) {
       case (null) { [] };
-      case (?history) {
-        history.toArray();
-      };
+      case (?history) { history.toArray() };
     };
   };
 
@@ -97,7 +95,6 @@ actor {
   };
 
   // Generate AI response based on user message
-  // This function performs intent detection and returns predefined responses
   func generateAIResponse(userMessage : Text) : Text {
     // Track order
     if (isOrderTracking(userMessage)) {
@@ -205,11 +202,28 @@ actor {
 
   // Helper function to check if input text contains any of the given keywords
   func containsAny(text : Text, keywords : [Text]) : Bool {
-    // Convert everything to lowercase on the frontend and pass to the backend.
     for (keyword in keywords.values()) {
       if (text.contains(#text keyword)) { return true };
     };
     false;
   };
-};
 
+  // Inventory management functions
+
+  // Get inventory count for a specific SKU
+  public query ({ caller }) func checkInventory(sku : Text) : async ?Nat {
+    inventory.get(sku);
+  };
+
+  // Get all inventory items as array
+  public query ({ caller }) func getAllInventory() : async [(Text, Nat)] {
+    inventory.toArray();
+  };
+
+  // Add or update inventory item (SKU)
+  public shared ({ caller }) func addInventoryItem(sku : Text, units : Nat) : async Bool {
+    if (sku.size() == 0) { return false };
+    inventory.add(sku, units);
+    true;
+  };
+};

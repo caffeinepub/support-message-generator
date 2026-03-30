@@ -482,11 +482,13 @@ export default function App() {
 }
 
 // ─── Dashboard View ─────────────────────────────────────────────────────────
+import { InventoryTab } from "@/components/InventoryTab";
 import { OrdersRequestTab } from "@/components/OrdersRequestTab";
-import { ArrowLeft, ClipboardList } from "lucide-react";
+import { ArrowLeft, ClipboardList, Package } from "lucide-react";
 
 const DASH_TABS = [
   { id: "orders", label: "Orders Request", icon: ClipboardList },
+  { id: "inventory", label: "Inventory", icon: Package },
 ];
 
 function DashboardView({ onBack }: { onBack: () => void }) {
@@ -555,6 +557,7 @@ function DashboardView({ onBack }: { onBack: () => void }) {
 
       <main className="flex-1 max-w-7xl mx-auto w-full px-4 py-6">
         {activeTab === "orders" && <OrdersRequestTab />}
+        {activeTab === "inventory" && <InventoryTab />}
       </main>
 
       <footer className="border-t border-border py-4 text-center">

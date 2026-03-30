@@ -17,14 +17,21 @@ export const Message = IDL.Record({
 });
 
 export const idlService = IDL.Service({
+  'addInventoryItem' : IDL.Func([IDL.Text, IDL.Nat], [IDL.Bool], []),
   'addMessage' : IDL.Func([SessionId, Role, IDL.Text], [IDL.Bool], []),
   'addUserMessageWithResponse' : IDL.Func(
       [SessionId, IDL.Text],
       [IDL.Text],
       [],
     ),
+  'checkInventory' : IDL.Func([IDL.Text], [IDL.Opt(IDL.Nat)], ['query']),
   'clearSession' : IDL.Func([SessionId], [IDL.Bool], []),
   'createSession' : IDL.Func([], [SessionId], []),
+  'getAllInventory' : IDL.Func(
+      [],
+      [IDL.Vec(IDL.Tuple(IDL.Text, IDL.Nat))],
+      ['query'],
+    ),
   'getSessionMessages' : IDL.Func([SessionId], [IDL.Vec(Message)], ['query']),
 });
 
@@ -40,14 +47,21 @@ export const idlFactory = ({ IDL }) => {
   });
   
   return IDL.Service({
+    'addInventoryItem' : IDL.Func([IDL.Text, IDL.Nat], [IDL.Bool], []),
     'addMessage' : IDL.Func([SessionId, Role, IDL.Text], [IDL.Bool], []),
     'addUserMessageWithResponse' : IDL.Func(
         [SessionId, IDL.Text],
         [IDL.Text],
         [],
       ),
+    'checkInventory' : IDL.Func([IDL.Text], [IDL.Opt(IDL.Nat)], ['query']),
     'clearSession' : IDL.Func([SessionId], [IDL.Bool], []),
     'createSession' : IDL.Func([], [SessionId], []),
+    'getAllInventory' : IDL.Func(
+        [],
+        [IDL.Vec(IDL.Tuple(IDL.Text, IDL.Nat))],
+        ['query'],
+      ),
     'getSessionMessages' : IDL.Func([SessionId], [IDL.Vec(Message)], ['query']),
   });
 };

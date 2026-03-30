@@ -19,10 +19,13 @@ export type Role = { 'agent' : null } |
   { 'user' : null };
 export type SessionId = string;
 export interface _SERVICE {
+  'addInventoryItem' : ActorMethod<[string, bigint], boolean>,
   'addMessage' : ActorMethod<[SessionId, Role, string], boolean>,
   'addUserMessageWithResponse' : ActorMethod<[SessionId, string], string>,
+  'checkInventory' : ActorMethod<[string], [] | [bigint]>,
   'clearSession' : ActorMethod<[SessionId], boolean>,
   'createSession' : ActorMethod<[], SessionId>,
+  'getAllInventory' : ActorMethod<[], Array<[string, bigint]>>,
   'getSessionMessages' : ActorMethod<[SessionId], Array<Message>>,
 }
 export declare const idlService: IDL.ServiceClass;

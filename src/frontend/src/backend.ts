@@ -100,15 +100,32 @@ export enum Role {
     user = "user"
 }
 export interface backendInterface {
+    addInventoryItem(sku: string, units: bigint): Promise<boolean>;
     addMessage(sessionId: SessionId, role: Role, content: string): Promise<boolean>;
     addUserMessageWithResponse(sessionId: SessionId, userContent: string): Promise<string>;
+    checkInventory(sku: string): Promise<bigint | null>;
     clearSession(sessionId: SessionId): Promise<boolean>;
     createSession(): Promise<SessionId>;
+    getAllInventory(): Promise<Array<[string, bigint]>>;
     getSessionMessages(sessionId: SessionId): Promise<Array<Message>>;
 }
 import type { Message as _Message, Role as _Role } from "./declarations/backend.did.d.ts";
 export class Backend implements backendInterface {
     constructor(private actor: ActorSubclass<_SERVICE>, private _uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, private _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, private processError?: (error: unknown) => never){}
+    async addInventoryItem(arg0: string, arg1: bigint): Promise<boolean> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.addInventoryItem(arg0, arg1);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.addInventoryItem(arg0, arg1);
+            return result;
+        }
+    }
     async addMessage(arg0: SessionId, arg1: Role, arg2: string): Promise<boolean> {
         if (this.processError) {
             try {
@@ -135,6 +152,20 @@ export class Backend implements backendInterface {
         } else {
             const result = await this.actor.addUserMessageWithResponse(arg0, arg1);
             return result;
+        }
+    }
+    async checkInventory(arg0: string): Promise<bigint | null> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.checkInventory(arg0);
+                return from_candid_opt_n3(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.checkInventory(arg0);
+            return from_candid_opt_n3(this._uploadFile, this._downloadFile, result);
         }
     }
     async clearSession(arg0: SessionId): Promise<boolean> {
@@ -165,28 +196,45 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async getAllInventory(): Promise<Array<[string, bigint]>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getAllInventory();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getAllInventory();
+            return result;
+        }
+    }
     async getSessionMessages(arg0: SessionId): Promise<Array<Message>> {
         if (this.processError) {
             try {
                 const result = await this.actor.getSessionMessages(arg0);
-                return from_candid_vec_n3(this._uploadFile, this._downloadFile, result);
+                return from_candid_vec_n4(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getSessionMessages(arg0);
-            return from_candid_vec_n3(this._uploadFile, this._downloadFile, result);
+            return from_candid_vec_n4(this._uploadFile, this._downloadFile, result);
         }
     }
 }
-function from_candid_Message_n4(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _Message): Message {
-    return from_candid_record_n5(_uploadFile, _downloadFile, value);
+function from_candid_Message_n5(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _Message): Message {
+    return from_candid_record_n6(_uploadFile, _downloadFile, value);
 }
-function from_candid_Role_n6(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _Role): Role {
-    return from_candid_variant_n7(_uploadFile, _downloadFile, value);
+function from_candid_Role_n7(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _Role): Role {
+    return from_candid_variant_n8(_uploadFile, _downloadFile, value);
 }
-function from_candid_record_n5(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_opt_n3(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [bigint]): bigint | null {
+    return value.length === 0 ? null : value[0];
+}
+function from_candid_record_n6(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     content: string;
     role: _Role;
     timestamp: bigint;
@@ -197,19 +245,19 @@ function from_candid_record_n5(_uploadFile: (file: ExternalBlob) => Promise<Uint
 } {
     return {
         content: value.content,
-        role: from_candid_Role_n6(_uploadFile, _downloadFile, value.role),
+        role: from_candid_Role_n7(_uploadFile, _downloadFile, value.role),
         timestamp: value.timestamp
     };
 }
-function from_candid_variant_n7(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_variant_n8(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     agent: null;
 } | {
     user: null;
 }): Role {
     return "agent" in value ? Role.agent : "user" in value ? Role.user : value;
 }
-function from_candid_vec_n3(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_Message>): Array<Message> {
-    return value.map((x)=>from_candid_Message_n4(_uploadFile, _downloadFile, x));
+function from_candid_vec_n4(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_Message>): Array<Message> {
+    return value.map((x)=>from_candid_Message_n5(_uploadFile, _downloadFile, x));
 }
 function to_candid_Role_n1(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Role): _Role {
     return to_candid_variant_n2(_uploadFile, _downloadFile, value);
