@@ -484,20 +484,10 @@ export default function App() {
 // ─── Dashboard View ─────────────────────────────────────────────────────────
 import { CSAgentTab } from "@/components/CSAgentTab";
 import { CourierAgentTab } from "@/components/CourierAgentTab";
-import { EshopboxTab } from "@/components/EshopboxTab";
 import { OrdersRequestTab } from "@/components/OrdersRequestTab";
-import { ShopifyTab } from "@/components/ShopifyTab";
-import {
-  ArrowLeft,
-  ClipboardList,
-  Package,
-  ShoppingBag,
-  Truck,
-} from "lucide-react";
+import { ArrowLeft, ClipboardList, Truck } from "lucide-react";
 
 const DASH_TABS = [
-  { id: "shopify", label: "Shopify", icon: ShoppingBag },
-  { id: "eshopbox", label: "Eshopbox", icon: Package },
   { id: "orders", label: "Orders Request", icon: ClipboardList },
   { id: "agent", label: "CS Agent", icon: Bot },
   { id: "courier", label: "Courier Expert", icon: Truck },
@@ -568,8 +558,6 @@ function DashboardView({ onBack }: { onBack: () => void }) {
       </div>
 
       <main className="flex-1 max-w-7xl mx-auto w-full px-4 py-6">
-        {activeTab === "shopify" && <ShopifyTab />}
-        {activeTab === "eshopbox" && <EshopboxTab />}
         {activeTab === "orders" && <OrdersRequestTab />}
         {activeTab === "agent" && <CSAgentTab />}
         {activeTab === "courier" && <CourierAgentTab />}
