@@ -71,14 +71,43 @@ export function generateMessage(
   const name = v.name || "[Customer Name]";
   const orderId = v.orderId || "[Order ID]";
   const subCat = v.subCategory || "";
+  const media = v.mediaType || "Whatsapp";
 
   switch (scenario) {
-    case "order-confirmation":
+    case "order-confirmation": {
+      const itemName = v.itemName || "[Item Name]";
+      const orderDate = v.orderDate || "[Order Date]";
+      if (media === "Email") {
+        return `Subject: Order Confirmation Pending – Order ID: ${orderId}
+
+Dear ${name},
+
+Thank you for placing your order with us!
+
+We wanted to inform you that your Order ID: ${orderId} for "${itemName}" placed on ${orderDate} is currently in Confirmation Pending status.
+
+Our team is reviewing your order and it will be confirmed shortly. You will receive a confirmation update once the order is processed.
+
+We appreciate your patience.
+
+Best regards,
+Team LamaStore`;
+      }
+      if (media === "Instagram") {
+        return `Hi ${name} 😊
+
+Thanks for your order! Your Order ID: ${orderId} for "${itemName}" placed on ${orderDate} is currently in Confirmation Pending status.
+
+Our team is reviewing it and will confirm shortly. We'll keep you posted! 💫
+
+– Team LamaStore`;
+      }
+      // Default: Whatsapp
       return `Dear ${name},
 
 Thank you for placing your order with us!
 
-We wanted to inform you that your Order ID: ${orderId} for "${v.itemName || "[Item Name]"}" placed on ${v.orderDate || "[Order Date]"} is currently in Confirmation Pending status.
+We wanted to inform you that your Order ID: ${orderId} for "${itemName}" placed on ${orderDate} is currently in Confirmation Pending status.
 
 Our team is reviewing your order and it will be confirmed shortly. You will receive a confirmation update once the order is processed.
 
@@ -86,6 +115,7 @@ We appreciate your patience and will keep you updated.
 
 Thank you!
 Team LamaStore`;
+    }
 
     case "abandoned-checkout":
       return `Dear ${name},
@@ -205,7 +235,6 @@ Team LamaStore`;
 
     case "order-cancellation": {
       const itemName = v.itemName || "[Item Name]";
-      const media = v.mediaType || "Whatsapp";
       if (media === "Email") {
         return `Subject: Cancellation Request for Order ID: ${orderId}
 
@@ -294,6 +323,44 @@ Team LamaStore`;
 
     case "return-request": {
       const itemList = buildItemList(v.itemsToReturn || "");
+      if (media === "Email") {
+        return `Subject: Return Request for Order ID: ${orderId}
+
+Dear ${name},
+
+We have received your return request for Order ID: ${orderId}.
+
+Reason for Return: ${v.returnReason || "[Reason]"}
+
+Items to be returned:
+${itemList || "[Items to return]"}
+
+We will arrange a reverse pickup on ${v.pickupDate || "[Pickup Date]"}. Please ensure the items are packed securely and ready for pickup.
+
+Once the items are received at our warehouse, we will process your request within 5-7 working days.
+
+Best regards,
+Team LamaStore`;
+      }
+      if (media === "Instagram") {
+        return `Hi ${name} 😊
+
+We've received your return request for Order ID: ${orderId}.
+
+Reason: ${v.returnReason || "[Reason]"}
+
+Items to be returned:
+${itemList || "[Items to return]"}
+
+We'll arrange a reverse pickup on ${v.pickupDate || "[Pickup Date]"}. Please pack the items securely and keep them ready! 📦
+
+Once received at our warehouse, we'll process your request within 5-7 working days.
+
+Thank you for your patience and support 💙
+
+– Team LamaStore`;
+      }
+      // Default: Whatsapp
       return `Dear ${name},
 
 We have received your return request for Order ID: ${orderId}.
@@ -311,17 +378,48 @@ Thank you!
 Team LamaStore`;
     }
 
-    case "refund-status":
+    case "refund-status": {
+      const refundAmt = v.refundAmount || "[Amount]";
+      const refundSt = v.refundStatus || "initiated";
+      const payMode = v.paymentMode || "source account";
+      const expDays = v.expectedDays || "5-7 working days";
+      if (media === "Email") {
+        return `Subject: Refund Status Update – Order ID: ${orderId}
+
+Dear ${name},
+
+Thank you for reaching out regarding your refund for Order ID: ${orderId}.
+
+We are pleased to inform you that your refund of Rs. ${refundAmt} has been ${refundSt} and will be credited to your ${payMode} within ${expDays}.
+
+If you have not received the refund after the mentioned timeline, please do not hesitate to contact us and we will be happy to assist you.
+
+Best regards,
+Team LamaStore`;
+      }
+      if (media === "Instagram") {
+        return `Hi ${name} 😊
+
+Your refund update for Order ID: ${orderId} is here!
+
+Your refund of Rs. ${refundAmt} has been ${refundSt} and will be credited to your ${payMode} within ${expDays}.
+
+If you don't see it after that, feel free to reach out — we're here to help! 💙
+
+– Team LamaStore`;
+      }
+      // Default: Whatsapp
       return `Dear ${name},
 
 Thank you for reaching out regarding your refund for Order ID: ${orderId}.
 
-We are pleased to inform you that your refund of Rs. ${v.refundAmount || "[Amount]"} has been ${v.refundStatus || "initiated"} and will be credited to your ${v.paymentMode || "source account"} within ${v.expectedDays || "5-7 working days"}.
+We are pleased to inform you that your refund of Rs. ${refundAmt} has been ${refundSt} and will be credited to your ${payMode} within ${expDays}.
 
 If you have not received the refund after the mentioned timeline, please do not hesitate to contact us and we will be happy to assist you.
 
 Thank you!
 Team LamaStore`;
+    }
 
     case "bad-quality":
       return `Dear ${name},

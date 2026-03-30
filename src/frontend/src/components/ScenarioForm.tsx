@@ -63,6 +63,39 @@ export function ScenarioForm({ scenario, ocidScope }: ScenarioFormProps) {
   );
 }
 
+function MediaTypeSelect({
+  value,
+  onChange,
+  ocid,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  ocid: string;
+}) {
+  return (
+    <div className="space-y-1">
+      <label
+        className="text-sm font-medium text-foreground"
+        htmlFor="mediaType"
+      >
+        Media Type
+      </label>
+      <select
+        id="mediaType"
+        data-ocid={ocid}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full rounded-md border border-border bg-[#1e2235] text-[#e8eaf0] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+      >
+        <option value="">Select Media Type</option>
+        <option value="Whatsapp">Whatsapp</option>
+        <option value="Instagram">Instagram</option>
+        <option value="Email">Email</option>
+      </select>
+    </div>
+  );
+}
+
 function ScenarioFields({
   scenario,
   get,
@@ -78,6 +111,11 @@ function ScenarioFields({
     case "order-confirmation":
       return (
         <>
+          <MediaTypeSelect
+            value={get("mediaType")}
+            onChange={(v) => setValue("mediaType", v)}
+            ocid={`${ocidScope}.mediaType.select`}
+          />
           <FormField
             label="Customer Name"
             id="name"
@@ -463,26 +501,11 @@ function ScenarioFields({
             placeholder="e.g. Black Hoodie"
             ocid={`${ocidScope}.itemName.input`}
           />
-          <div className="space-y-1">
-            <label
-              className="text-sm font-medium text-foreground"
-              htmlFor="mediaType"
-            >
-              Media Type
-            </label>
-            <select
-              id="mediaType"
-              data-ocid={`${ocidScope}.mediaType.select`}
-              value={get("mediaType")}
-              onChange={(e) => setValue("mediaType", e.target.value)}
-              className="w-full rounded-md border border-border bg-[#1e2235] text-[#e8eaf0] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-            >
-              <option value="">Select Media Type</option>
-              <option value="Whatsapp">Whatsapp</option>
-              <option value="Instagram">Instagram</option>
-              <option value="Email">Email</option>
-            </select>
-          </div>
+          <MediaTypeSelect
+            value={get("mediaType")}
+            onChange={(v) => setValue("mediaType", v)}
+            ocid={`${ocidScope}.mediaType.select`}
+          />
         </>
       );
     case "estimate-delivery":
@@ -646,6 +669,11 @@ function ScenarioFields({
     case "return-request":
       return (
         <>
+          <MediaTypeSelect
+            value={get("mediaType")}
+            onChange={(v) => setValue("mediaType", v)}
+            ocid={`${ocidScope}.mediaType.select`}
+          />
           <FormField
             label="Customer Name"
             id="name"
@@ -691,6 +719,11 @@ function ScenarioFields({
     case "refund-status":
       return (
         <>
+          <MediaTypeSelect
+            value={get("mediaType")}
+            onChange={(v) => setValue("mediaType", v)}
+            ocid={`${ocidScope}.mediaType.select`}
+          />
           <FormField
             label="Customer Name"
             id="name"
