@@ -6,9 +6,9 @@ import Nat "mo:core/Nat";
 import Array "mo:core/Array";
 import Int "mo:core/Int";
 import List "mo:core/List";
-import Migration "migration";
 
-(with migration = Migration.run)
+
+
 actor {
   type Role = {
     #user;

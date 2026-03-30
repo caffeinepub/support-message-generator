@@ -203,14 +203,44 @@ Thank you!
 Team LamaStore`;
     }
 
-    case "order-cancellation":
+    case "order-cancellation": {
+      const itemName = v.itemName || "[Item Name]";
+      const media = v.mediaType || "Whatsapp";
+      if (media === "Email") {
+        return `Subject: Cancellation Request for Order ID: ${orderId}
+
+Dear ${name},
+
+We have received your cancellation request for Order ID: ${orderId} for the "${itemName}."
+
+Your request is currently being processed. We will notify you once it has been successfully cancelled.
+
+Thank you for your patience.
+
+Best regards,
+Team LamaStore`;
+      }
+      if (media === "Instagram") {
+        return `Hi ${name} 😊
+
+We've received your cancellation request for Order ID: ${orderId} for "${itemName}."
+
+Your request is currently being processed, and we'll notify you once it's successfully cancelled.
+
+Thank you for your patience and support 💙
+
+– Team LamaStore`;
+      }
+      // Default: Whatsapp
       return `Dear ${name},
 
-We have received your cancellation request for Order ID: ${orderId} for the "${v.itemName || "[Item Name]"}".\n
+We have received your cancellation request for Order ID: ${orderId} for the "${itemName}".
+
 We are currently processing your request and will notify you once it is successfully cancelled.
 
 Thank you!
 Team LamaStore`;
+    }
 
     case "estimate-delivery":
       return `Dear ${name},

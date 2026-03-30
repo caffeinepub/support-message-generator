@@ -463,6 +463,26 @@ function ScenarioFields({
             placeholder="e.g. Black Hoodie"
             ocid={`${ocidScope}.itemName.input`}
           />
+          <div className="space-y-1">
+            <label
+              className="text-sm font-medium text-foreground"
+              htmlFor="mediaType"
+            >
+              Media Type
+            </label>
+            <select
+              id="mediaType"
+              data-ocid={`${ocidScope}.mediaType.select`}
+              value={get("mediaType")}
+              onChange={(e) => setValue("mediaType", e.target.value)}
+              className="w-full rounded-md border border-border bg-[#1e2235] text-[#e8eaf0] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+            >
+              <option value="">Select Media Type</option>
+              <option value="Whatsapp">Whatsapp</option>
+              <option value="Instagram">Instagram</option>
+              <option value="Email">Email</option>
+            </select>
+          </div>
         </>
       );
     case "estimate-delivery":
