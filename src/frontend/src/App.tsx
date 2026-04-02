@@ -1,7 +1,10 @@
 import { Toaster } from "@/components/ui/sonner";
+import { Principal } from "@icp-sdk/core/principal";
 import { useEffect, useRef, useState } from "react";
+import type { Expense as BackendExpense } from "./backend.d.ts";
 import BottomNav from "./components/BottomNav";
 import Onboarding from "./components/Onboarding";
+import { useActor } from "./hooks/useActor";
 import { storage } from "./lib/storage";
 import AIInsightsScreen from "./screens/AIInsightsScreen";
 import BudgetPlannerScreen from "./screens/BudgetPlannerScreen";
@@ -14,11 +17,35 @@ import LoanScreen from "./screens/LoanScreen";
 import LoginScreen from "./screens/LoginScreen";
 import ProfileScreen from "./screens/ProfileScreen";
 import SplashScreen from "./screens/SplashScreen";
-import type { ChatMessage, Expense, Loan, Screen, UserProfile } from "./types";
+import type {
+  Category,
+  ChatMessage,
+  Expense,
+  Loan,
+  Screen,
+  UserProfile,
+} from "./types";
 
 type AppFlow = "splash" | "login" | "onboarding" | "app";
 
+// Convert backend expense shape to frontend Expense shape.
+// Backend: { id, date, notes, timestamp, category, amount }
+// Frontend: { id, amount, note, category, date }
+function backendToFrontend(e: BackendExpense): Expense {
+  return {
+    id: e.id,
+    amount: e.amount,
+    note: e.notes,
+    category: (e.category as Category) || "Other",
+    date: e.date,
+  };
+}
+
+const ANON_PRINCIPAL = Principal.anonymous();
+
 export default function App() {
+  const { actor } = useActor();
+
   const [flow, setFlow] = useState<AppFlow>("splash");
   const [userName, setUserName] = useState<string>(() => {
     return storage.getAuth()?.name || "";
@@ -57,6 +84,30 @@ export default function App() {
     storage.setTheme(theme);
   }, [theme]);
 
+  // Sync expenses and profile from backend when actor is ready and app is in flow
+  useEffect(() => {
+    if (flow !== "app" || !actor) return;
+    void (async () => {
+      try {
+        const [backendExpenses, backendProfile] = await Promise.all([
+          actor.getExpenses(ANON_PRINCIPAL),
+          actor.getProfile(ANON_PRINCIPAL),
+        ]);
+        const converted = backendExpenses.map(backendToFrontend);
+        if (converted.length > 0) {
+          setExpenses(converted);
+          storage.setExpenses(converted);
+        }
+        if (backendProfile) {
+          setProfile(backendProfile);
+          storage.setProfile(backendProfile);
+        }
+      } catch {
+        // Silently fall back to localStorage cache
+      }
+    })();
+  }, [flow, actor]);
+
   function handleSplashComplete() {
     const auth = storage.getAuth();
     if (auth?.email) {
@@ -91,24 +142,71 @@ export default function App() {
     storage.setProfile(p);
     setProfile(p);
     setFlow("app");
+    if (actor) {
+      void actor
+        .saveProfile(
+          ANON_PRINCIPAL,
+          p.monthlyIncome,
+          p.fixedExpenses,
+          p.savingsGoal,
+          p.goalName,
+          p.currentSavings,
+        )
+        .catch(() => {});
+    }
   }
 
   function handleUpdateProfile(p: UserProfile) {
     storage.setProfile(p);
     setProfile(p);
+    if (actor) {
+      void actor
+        .saveProfile(
+          ANON_PRINCIPAL,
+          p.monthlyIncome,
+          p.fixedExpenses,
+          p.savingsGoal,
+          p.goalName,
+          p.currentSavings,
+        )
+        .catch(() => {});
+    }
   }
 
   function handleAddExpense(e: Omit<Expense, "id">) {
-    const newExpense: Expense = { ...e, id: Date.now().toString() };
-    const updated = [newExpense, ...expenses];
-    setExpenses(updated);
-    storage.setExpenses(updated);
+    // Optimistic update with a temporary local ID
+    const tempId = `tmp_${Date.now()}`;
+    const newExpense: Expense = { ...e, id: tempId };
+    const optimistic = [newExpense, ...expenses];
+    setExpenses(optimistic);
+    storage.setExpenses(optimistic);
+
+    // Background sync — swap temp ID with server-assigned ID on success
+    if (actor) {
+      void actor
+        .addExpense(ANON_PRINCIPAL, e.category, e.amount, e.note, e.date)
+        .then((saved) => {
+          setExpenses((prev) => {
+            const updated = prev.map((x) =>
+              x.id === tempId ? { ...x, id: saved.id } : x,
+            );
+            storage.setExpenses(updated);
+            return updated;
+          });
+        })
+        .catch(() => {});
+    }
   }
 
   function handleDeleteExpense(id: string) {
+    // Optimistic delete
     const updated = expenses.filter((e) => e.id !== id);
     setExpenses(updated);
     storage.setExpenses(updated);
+
+    if (actor) {
+      void actor.deleteExpense(ANON_PRINCIPAL, id).catch(() => {});
+    }
   }
 
   function handleAddLoan(l: Omit<Loan, "id">) {
@@ -172,7 +270,6 @@ export default function App() {
     setFlow("login");
   }
 
-  // Splash screen
   if (flow === "splash") {
     return (
       <>
@@ -182,7 +279,6 @@ export default function App() {
     );
   }
 
-  // Login screen
   if (flow === "login") {
     return (
       <div className="flex justify-center items-start min-h-screen bg-black">
@@ -197,7 +293,6 @@ export default function App() {
     );
   }
 
-  // Onboarding
   if (flow === "onboarding" || !profile) {
     return (
       <div className="flex justify-center items-start min-h-screen bg-black">
@@ -218,12 +313,10 @@ export default function App() {
         className="relative w-full max-w-[430px] min-h-screen bg-background flex flex-col overflow-hidden"
         style={{ boxShadow: "0 0 60px rgba(0,0,0,0.8)" }}
       >
-        {/* Scrollable content area */}
         <main
           className="flex-1 overflow-y-auto scrollbar-none"
           style={{ paddingBottom: 80 }}
         >
-          {/* Screen transition wrapper */}
           <div
             key={transitionKey}
             style={{
@@ -307,7 +400,6 @@ export default function App() {
           </div>
         </main>
 
-        {/* Bottom navigation */}
         <BottomNav active={screen} onChange={handleNavigate} />
 
         <Toaster richColors position="top-center" />

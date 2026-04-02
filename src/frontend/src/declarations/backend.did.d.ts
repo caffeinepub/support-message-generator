@@ -10,6 +10,14 @@ import type { ActorMethod } from '@icp-sdk/core/agent';
 import type { IDL } from '@icp-sdk/core/candid';
 import type { Principal } from '@icp-sdk/core/principal';
 
+export interface Expense {
+  'id' : string,
+  'date' : string,
+  'notes' : string,
+  'timestamp' : bigint,
+  'category' : string,
+  'amount' : number,
+}
 export interface Message {
   'content' : string,
   'role' : Role,
@@ -18,15 +26,33 @@ export interface Message {
 export type Role = { 'agent' : null } |
   { 'user' : null };
 export type SessionId = string;
+export interface UserProfile {
+  'goalName' : string,
+  'fixedExpenses' : number,
+  'currentSavings' : number,
+  'savingsGoal' : number,
+  'monthlyIncome' : number,
+}
 export interface _SERVICE {
+  'addExpense' : ActorMethod<
+    [Principal, string, number, string, string],
+    Expense
+  >,
   'addInventoryItem' : ActorMethod<[string, bigint], boolean>,
   'addMessage' : ActorMethod<[SessionId, Role, string], boolean>,
   'addUserMessageWithResponse' : ActorMethod<[SessionId, string], string>,
   'checkInventory' : ActorMethod<[string], [] | [bigint]>,
   'clearSession' : ActorMethod<[SessionId], boolean>,
   'createSession' : ActorMethod<[], SessionId>,
+  'deleteExpense' : ActorMethod<[Principal, string], boolean>,
   'getAllInventory' : ActorMethod<[], Array<[string, bigint]>>,
+  'getExpenses' : ActorMethod<[Principal], Array<Expense>>,
+  'getProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'getSessionMessages' : ActorMethod<[SessionId], Array<Message>>,
+  'saveProfile' : ActorMethod<
+    [Principal, number, number, number, string, number],
+    boolean
+  >,
 }
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];

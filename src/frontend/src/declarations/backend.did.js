@@ -8,8 +8,23 @@
 
 import { IDL } from '@icp-sdk/core/candid';
 
+export const Expense = IDL.Record({
+  'id' : IDL.Text,
+  'date' : IDL.Text,
+  'notes' : IDL.Text,
+  'timestamp' : IDL.Int,
+  'category' : IDL.Text,
+  'amount' : IDL.Float64,
+});
 export const SessionId = IDL.Text;
 export const Role = IDL.Variant({ 'agent' : IDL.Null, 'user' : IDL.Null });
+export const UserProfile = IDL.Record({
+  'goalName' : IDL.Text,
+  'fixedExpenses' : IDL.Float64,
+  'currentSavings' : IDL.Float64,
+  'savingsGoal' : IDL.Float64,
+  'monthlyIncome' : IDL.Float64,
+});
 export const Message = IDL.Record({
   'content' : IDL.Text,
   'role' : Role,
@@ -17,6 +32,11 @@ export const Message = IDL.Record({
 });
 
 export const idlService = IDL.Service({
+  'addExpense' : IDL.Func(
+      [IDL.Principal, IDL.Text, IDL.Float64, IDL.Text, IDL.Text],
+      [Expense],
+      [],
+    ),
   'addInventoryItem' : IDL.Func([IDL.Text, IDL.Nat], [IDL.Bool], []),
   'addMessage' : IDL.Func([SessionId, Role, IDL.Text], [IDL.Bool], []),
   'addUserMessageWithResponse' : IDL.Func(
@@ -27,19 +47,49 @@ export const idlService = IDL.Service({
   'checkInventory' : IDL.Func([IDL.Text], [IDL.Opt(IDL.Nat)], ['query']),
   'clearSession' : IDL.Func([SessionId], [IDL.Bool], []),
   'createSession' : IDL.Func([], [SessionId], []),
+  'deleteExpense' : IDL.Func([IDL.Principal, IDL.Text], [IDL.Bool], []),
   'getAllInventory' : IDL.Func(
       [],
       [IDL.Vec(IDL.Tuple(IDL.Text, IDL.Nat))],
       ['query'],
     ),
-  'getSessionMessages' : IDL.Func([SessionId], [IDL.Vec(Message)], ['query']),
+  'getExpenses' : IDL.Func([IDL.Principal], [IDL.Vec(Expense)], ['query']),
+  'getProfile' : IDL.Func([IDL.Principal], [IDL.Opt(UserProfile)], ['query']),
+  'getSessionMessages' : IDL.Func([SessionId], [IDL.Vec(Message)], []),
+  'saveProfile' : IDL.Func(
+      [
+        IDL.Principal,
+        IDL.Float64,
+        IDL.Float64,
+        IDL.Float64,
+        IDL.Text,
+        IDL.Float64,
+      ],
+      [IDL.Bool],
+      [],
+    ),
 });
 
 export const idlInitArgs = [];
 
 export const idlFactory = ({ IDL }) => {
+  const Expense = IDL.Record({
+    'id' : IDL.Text,
+    'date' : IDL.Text,
+    'notes' : IDL.Text,
+    'timestamp' : IDL.Int,
+    'category' : IDL.Text,
+    'amount' : IDL.Float64,
+  });
   const SessionId = IDL.Text;
   const Role = IDL.Variant({ 'agent' : IDL.Null, 'user' : IDL.Null });
+  const UserProfile = IDL.Record({
+    'goalName' : IDL.Text,
+    'fixedExpenses' : IDL.Float64,
+    'currentSavings' : IDL.Float64,
+    'savingsGoal' : IDL.Float64,
+    'monthlyIncome' : IDL.Float64,
+  });
   const Message = IDL.Record({
     'content' : IDL.Text,
     'role' : Role,
@@ -47,6 +97,11 @@ export const idlFactory = ({ IDL }) => {
   });
   
   return IDL.Service({
+    'addExpense' : IDL.Func(
+        [IDL.Principal, IDL.Text, IDL.Float64, IDL.Text, IDL.Text],
+        [Expense],
+        [],
+      ),
     'addInventoryItem' : IDL.Func([IDL.Text, IDL.Nat], [IDL.Bool], []),
     'addMessage' : IDL.Func([SessionId, Role, IDL.Text], [IDL.Bool], []),
     'addUserMessageWithResponse' : IDL.Func(
@@ -57,12 +112,27 @@ export const idlFactory = ({ IDL }) => {
     'checkInventory' : IDL.Func([IDL.Text], [IDL.Opt(IDL.Nat)], ['query']),
     'clearSession' : IDL.Func([SessionId], [IDL.Bool], []),
     'createSession' : IDL.Func([], [SessionId], []),
+    'deleteExpense' : IDL.Func([IDL.Principal, IDL.Text], [IDL.Bool], []),
     'getAllInventory' : IDL.Func(
         [],
         [IDL.Vec(IDL.Tuple(IDL.Text, IDL.Nat))],
         ['query'],
       ),
-    'getSessionMessages' : IDL.Func([SessionId], [IDL.Vec(Message)], ['query']),
+    'getExpenses' : IDL.Func([IDL.Principal], [IDL.Vec(Expense)], ['query']),
+    'getProfile' : IDL.Func([IDL.Principal], [IDL.Opt(UserProfile)], ['query']),
+    'getSessionMessages' : IDL.Func([SessionId], [IDL.Vec(Message)], []),
+    'saveProfile' : IDL.Func(
+        [
+          IDL.Principal,
+          IDL.Float64,
+          IDL.Float64,
+          IDL.Float64,
+          IDL.Text,
+          IDL.Float64,
+        ],
+        [IDL.Bool],
+        [],
+      ),
   });
 };
 

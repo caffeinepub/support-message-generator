@@ -3,12 +3,14 @@ import Text "mo:core/Text";
 import Map "mo:core/Map";
 import Iter "mo:core/Iter";
 import Nat "mo:core/Nat";
-import Array "mo:core/Array";
-import Int "mo:core/Int";
 import List "mo:core/List";
+import Int "mo:core/Int";
+import Array "mo:core/Array";
+import Float "mo:core/Float";
+import Principal "mo:core/Principal";
+import Migration "migration";
 
-
-
+(with migration = Migration.run)
 actor {
   type Role = {
     #user;
@@ -21,15 +23,11 @@ actor {
     timestamp : Int;
   };
 
-  type ChatHistory = List.List<Message>;
-
   type SessionId = Text;
 
-  let chatSessions = Map.empty<SessionId, ChatHistory>();
+  let chatSessions = Map.empty<SessionId, List.List<Message>>();
 
-  // Persistent inventory map (sku -> units)
   let inventory = Map.empty<Text, Nat>();
-  // Pre-seed sample SKUs (commented for actual deployment, seed with persistent data using migration)
 
   func createMessage(role : Role, content : Text) : Message {
     {
@@ -40,7 +38,7 @@ actor {
   };
 
   // Generate a unique session ID (for simplicity, use timestamp)
-  public shared ({ caller }) func createSession() : async SessionId {
+  public func createSession() : async SessionId {
     let sessionId = Time.now().toText();
     let sessionHistory = List.empty<Message>();
     chatSessions.add(sessionId, sessionHistory);
@@ -48,7 +46,7 @@ actor {
   };
 
   // Add a message to a session
-  public shared ({ caller }) func addMessage(sessionId : SessionId, role : Role, content : Text) : async Bool {
+  public func addMessage(sessionId : SessionId, role : Role, content : Text) : async Bool {
     let message = createMessage(role, content);
     switch (chatSessions.get(sessionId)) {
       case (null) { false };
@@ -62,7 +60,7 @@ actor {
   };
 
   // Add user message and generate agent response
-  public shared ({ caller }) func addUserMessageWithResponse(sessionId : SessionId, userContent : Text) : async Text {
+  public func addUserMessageWithResponse(sessionId : SessionId, userContent : Text) : async Text {
     let userMessage = createMessage(#user, userContent);
     switch (chatSessions.get(sessionId)) {
       case (null) { "" };
@@ -78,23 +76,20 @@ actor {
     };
   };
 
-  // Get messages for a session (including both user and agent messages)
-  public query ({ caller }) func getSessionMessages(sessionId : SessionId) : async [Message] {
+  public func getSessionMessages(sessionId : SessionId) : async [Message] {
     switch (chatSessions.get(sessionId)) {
       case (null) { [] };
       case (?history) { history.toArray() };
     };
   };
 
-  // Clear/reset a chat session
-  public shared ({ caller }) func clearSession(sessionId : SessionId) : async Bool {
+  public func clearSession(sessionId : SessionId) : async Bool {
     if (not chatSessions.containsKey(sessionId)) { return false };
     let newSessionHistory = List.empty<Message>();
     chatSessions.add(sessionId, newSessionHistory);
     true;
   };
 
-  // Generate AI response based on user message
   func generateAIResponse(userMessage : Text) : Text {
     // Track order
     if (isOrderTracking(userMessage)) {
@@ -155,7 +150,6 @@ actor {
     "I'm sorry, I didn't quite understand your request. Could you please provide more details or clarify your issue?";
   };
 
-  // Intent detection helper functions (simple keyword search)
   func isOrderTracking(text : Text) : Bool {
     containsAny(text, ["track", "order status", "shipping status", "where is my order", "track order"]);
   };
@@ -200,7 +194,6 @@ actor {
     containsAny(text, ["faq", "question", "help", "information", "about"]);
   };
 
-  // Helper function to check if input text contains any of the given keywords
   func containsAny(text : Text, keywords : [Text]) : Bool {
     for (keyword in keywords.values()) {
       if (text.contains(#text keyword)) { return true };
@@ -208,22 +201,104 @@ actor {
     false;
   };
 
-  // Inventory management functions
-
-  // Get inventory count for a specific SKU
   public query ({ caller }) func checkInventory(sku : Text) : async ?Nat {
     inventory.get(sku);
   };
 
-  // Get all inventory items as array
   public query ({ caller }) func getAllInventory() : async [(Text, Nat)] {
     inventory.toArray();
   };
 
-  // Add or update inventory item (SKU)
   public shared ({ caller }) func addInventoryItem(sku : Text, units : Nat) : async Bool {
     if (sku.size() == 0) { return false };
     inventory.add(sku, units);
     true;
+  };
+
+  type Expense = {
+    id : Text;
+    category : Text;
+    amount : Float;
+    notes : Text;
+    date : Text;
+    timestamp : Int;
+  };
+
+  type UserProfile = {
+    monthlyIncome : Float;
+    fixedExpenses : Float;
+    savingsGoal : Float;
+    goalName : Text;
+    currentSavings : Float;
+  };
+
+  public shared ({ caller }) func addExpense(principal : Principal, category : Text, amount : Float, notes : Text, date : Text) : async Expense {
+    let newExpense : Expense = {
+      id = Time.now().toText();
+      category;
+      amount;
+      notes;
+      date;
+      timestamp = Time.now();
+    };
+    let userExpenses = switch (expensesStore.get(principal)) {
+      case (null) { List.empty<Expense>() };
+      case (?list) { list.clone() };
+    };
+    userExpenses.add(newExpense);
+    expensesStore.add(principal, userExpenses);
+    newExpense;
+  };
+
+  let expensesStore = Map.empty<Principal, List.List<Expense>>();
+  // Use explicit update method instead of direct size manipulation.
+
+  public query ({ caller }) func getExpenses(principal : Principal) : async [Expense] {
+    switch (expensesStore.get(principal)) {
+      case (null) { [] };
+      case (?userExpenses) {
+        let sortableArray = userExpenses.toArray();
+        sortableArray.sort(
+          func(a, b) {
+            Int.compare(b.timestamp, a.timestamp);
+          }
+        );
+      };
+    };
+  };
+
+  public shared ({ caller }) func deleteExpense(principal : Principal, id : Text) : async Bool {
+    switch (expensesStore.get(principal)) {
+      case (null) { false };
+      case (?userExpenses) {
+        let remainingExpenses = userExpenses.filter(
+          func(expense) { expense.id != id }
+        );
+        if (remainingExpenses.size() == userExpenses.size()) {
+          false;
+        } else {
+          expensesStore.add(principal, remainingExpenses);
+          true;
+        };
+      };
+    };
+  };
+
+  let profilesStore = Map.empty<Principal, UserProfile>();
+
+  public shared ({ caller }) func saveProfile(principal : Principal, monthlyIncome : Float, fixedExpenses : Float, savingsGoal : Float, goalName : Text, currentSavings : Float) : async Bool {
+    let profile : UserProfile = {
+      monthlyIncome;
+      fixedExpenses;
+      savingsGoal;
+      goalName;
+      currentSavings;
+    };
+    profilesStore.add(principal, profile);
+    true;
+  };
+
+  public query ({ caller }) func getProfile(principal : Principal) : async ?UserProfile {
+    profilesStore.get(principal);
   };
 };
