@@ -9,10 +9,13 @@ import {
   Lock,
   LogOut,
   Moon,
+  PencilLine,
   Shield,
   Sun,
   User,
+  X,
 } from "lucide-react";
+import { useState } from "react";
 import { useRipple } from "../hooks/useRipple";
 import type { Screen, UserProfile } from "../types";
 
@@ -24,6 +27,7 @@ interface Props {
   onToggleTheme: () => void;
   onNavigate: (screen: Screen) => void;
   onLogout: () => void;
+  onUpdateProfile: (p: UserProfile) => void;
 }
 
 function SettingsRow({
@@ -93,6 +97,7 @@ export default function ProfileScreen({
   onToggleTheme,
   onNavigate,
   onLogout,
+  onUpdateProfile,
 }: Props) {
   const initials = userName
     .split(" ")
@@ -100,6 +105,58 @@ export default function ProfileScreen({
     .join("")
     .toUpperCase()
     .slice(0, 2);
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [incomeVal, setIncomeVal] = useState("");
+  const [fixedVal, setFixedVal] = useState("");
+  const [goalVal, setGoalVal] = useState("");
+  const [error, setError] = useState("");
+  const ripple = useRipple();
+
+  function openEdit() {
+    setIncomeVal(String(profile.monthlyIncome));
+    setFixedVal(String(profile.fixedExpenses));
+    setGoalVal(String(profile.savingsGoal));
+    setError("");
+    setIsEditing(true);
+  }
+
+  function cancelEdit() {
+    setIsEditing(false);
+    setError("");
+  }
+
+  function saveEdit() {
+    const income = Number.parseFloat(incomeVal);
+    const fixed = Number.parseFloat(fixedVal);
+    const goal = Number.parseFloat(goalVal);
+
+    if (Number.isNaN(income) || income <= 0) {
+      setError("Monthly income must be a positive number.");
+      return;
+    }
+    if (Number.isNaN(fixed) || fixed < 0) {
+      setError("Fixed expenses must be 0 or more.");
+      return;
+    }
+    if (fixed >= income) {
+      setError("Fixed expenses must be less than monthly income.");
+      return;
+    }
+    if (Number.isNaN(goal) || goal <= 0) {
+      setError("Savings goal must be a positive number.");
+      return;
+    }
+
+    onUpdateProfile({
+      ...profile,
+      monthlyIncome: income,
+      fixedExpenses: fixed,
+      savingsGoal: goal,
+    });
+    setIsEditing(false);
+    setError("");
+  }
 
   return (
     <div className="flex flex-col gap-4 px-4 pb-8">
@@ -177,6 +234,184 @@ export default function ProfileScreen({
             </p>
           </div>
         ))}
+      </div>
+
+      {/* ── Edit Financial Profile ── */}
+      <div
+        className="glass-card overflow-hidden animate-fade-up"
+        style={{ animationDelay: "100ms" }}
+      >
+        <div className="px-4 py-3 border-b border-border/40 flex items-center justify-between">
+          <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-widest">
+            Financial Profile
+          </p>
+          {!isEditing && (
+            <button
+              type="button"
+              onMouseDown={ripple}
+              onTouchStart={ripple}
+              onClick={openEdit}
+              className="ripple-container flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors"
+              style={{
+                background:
+                  "linear-gradient(135deg, rgba(79,166,255,0.18) 0%, rgba(123,92,255,0.18) 100%)",
+                color: "#7B5CFF",
+                border: "1px solid rgba(123,92,255,0.25)",
+              }}
+              data-ocid="profile.edit_button"
+            >
+              <PencilLine className="w-3.5 h-3.5" />
+              Edit
+            </button>
+          )}
+        </div>
+
+        {!isEditing ? (
+          /* Read-only view */
+          <div className="divide-y divide-border/40">
+            {[
+              {
+                label: "Monthly Income",
+                value: `₹${profile.monthlyIncome.toLocaleString("en-IN")}`,
+              },
+              {
+                label: "Fixed Expenses",
+                value: `₹${profile.fixedExpenses.toLocaleString("en-IN")}`,
+              },
+              {
+                label: "Savings Goal",
+                value: `₹${profile.savingsGoal.toLocaleString("en-IN")}`,
+              },
+            ].map((row) => (
+              <div
+                key={row.label}
+                className="flex items-center justify-between px-4 py-3.5"
+              >
+                <span className="text-sm text-muted-foreground">
+                  {row.label}
+                </span>
+                <span className="text-sm font-semibold text-foreground">
+                  {row.value}
+                </span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          /* Inline edit form */
+          <div className="px-4 py-4 flex flex-col gap-3">
+            {/* Monthly Income */}
+            <div>
+              <label
+                htmlFor="profile-income"
+                className="text-xs font-medium text-muted-foreground mb-1.5 block"
+              >
+                Monthly Income (₹)
+              </label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-muted-foreground pointer-events-none">
+                  ₹
+                </span>
+                <input
+                  id="profile-income"
+                  type="number"
+                  inputMode="numeric"
+                  value={incomeVal}
+                  onChange={(e) => setIncomeVal(e.target.value)}
+                  className="w-full pl-7 pr-3 py-2.5 rounded-xl text-sm font-medium text-foreground bg-muted/50 border border-border/50 focus:outline-none focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/30 transition-all"
+                  placeholder="e.g. 50000"
+                  data-ocid="profile.input"
+                />
+              </div>
+            </div>
+
+            {/* Fixed Expenses */}
+            <div>
+              <label
+                htmlFor="profile-fixed"
+                className="text-xs font-medium text-muted-foreground mb-1.5 block"
+              >
+                Fixed Expenses (₹)
+              </label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-muted-foreground pointer-events-none">
+                  ₹
+                </span>
+                <input
+                  id="profile-fixed"
+                  type="number"
+                  inputMode="numeric"
+                  value={fixedVal}
+                  onChange={(e) => setFixedVal(e.target.value)}
+                  className="w-full pl-7 pr-3 py-2.5 rounded-xl text-sm font-medium text-foreground bg-muted/50 border border-border/50 focus:outline-none focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/30 transition-all"
+                  placeholder="e.g. 15000"
+                  data-ocid="profile.input"
+                />
+              </div>
+            </div>
+
+            {/* Savings Goal */}
+            <div>
+              <label
+                htmlFor="profile-goal"
+                className="text-xs font-medium text-muted-foreground mb-1.5 block"
+              >
+                Savings Goal (₹)
+              </label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-muted-foreground pointer-events-none">
+                  ₹
+                </span>
+                <input
+                  id="profile-goal"
+                  type="number"
+                  inputMode="numeric"
+                  value={goalVal}
+                  onChange={(e) => setGoalVal(e.target.value)}
+                  className="w-full pl-7 pr-3 py-2.5 rounded-xl text-sm font-medium text-foreground bg-muted/50 border border-border/50 focus:outline-none focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/30 transition-all"
+                  placeholder="e.g. 100000"
+                  data-ocid="profile.input"
+                />
+              </div>
+            </div>
+
+            {/* Validation error */}
+            {error && (
+              <p
+                className="text-xs text-red-400 font-medium px-1"
+                data-ocid="profile.error_state"
+              >
+                {error}
+              </p>
+            )}
+
+            {/* Actions */}
+            <div className="flex gap-2 mt-1">
+              <button
+                type="button"
+                onMouseDown={ripple}
+                onTouchStart={ripple}
+                onClick={saveEdit}
+                className="ripple-container flex-1 py-2.5 rounded-xl text-sm font-bold text-white transition-all active:scale-[0.97]"
+                style={{
+                  background:
+                    "linear-gradient(135deg, #4FA6FF 0%, #7B5CFF 100%)",
+                  boxShadow: "0 4px 16px rgba(123,92,255,0.35)",
+                }}
+                data-ocid="profile.save_button"
+              >
+                Save Changes
+              </button>
+              <button
+                type="button"
+                onClick={cancelEdit}
+                className="flex items-center justify-center w-10 h-10 rounded-xl bg-muted/60 text-muted-foreground hover:text-foreground transition-colors flex-shrink-0"
+                data-ocid="profile.cancel_button"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ── Preferences ── */}

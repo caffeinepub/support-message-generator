@@ -301,6 +301,7 @@ export default function App() {
                 onToggleTheme={toggleTheme}
                 onNavigate={handleNavigate}
                 onLogout={handleLogout}
+                onUpdateProfile={handleUpdateProfile}
               />
             )}
           </div>
