@@ -48,18 +48,56 @@ const CATEGORY_ICONS: Record<string, string> = {
   Other: "💫",
 };
 
+// ─── useCountUp Hook ─────────────────────────────────────────────────────────
+function useCountUp(target: number, duration = 1200, enabled = true) {
+  const [value, setValue] = useState(0);
+  useEffect(() => {
+    if (!enabled || target === 0) {
+      setValue(target);
+      return;
+    }
+    setValue(0);
+    const start = performance.now();
+    let raf: number;
+    function tick(now: number) {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      // ease-out cubic
+      const eased = 1 - (1 - progress) ** 3;
+      setValue(Math.round(eased * target));
+      if (progress < 1) raf = requestAnimationFrame(tick);
+    }
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [target, duration, enabled]);
+  return value;
+}
+
+// ─── ShimmerBlock Component ──────────────────────────────────────────────────
+function ShimmerBlock({
+  className,
+  style,
+}: { className?: string; style?: React.CSSProperties }) {
+  return (
+    <div
+      className={`rounded-xl shimmer-dark ${className || ""}`}
+      style={style}
+    />
+  );
+}
+
 // ─── Animated Donut Chart ────────────────────────────────────────────────────
 function AnimatedDonutChart({
   catSpend,
-}: { catSpend: Record<string, number> }) {
+  animateNow,
+}: { catSpend: Record<string, number>; animateNow: boolean }) {
   const [animated, setAnimated] = useState(false);
   const entries = Object.entries(catSpend).filter(([, v]) => v > 0);
   const total = entries.reduce((s, [, v]) => s + v, 0);
 
   useEffect(() => {
-    const t = setTimeout(() => setAnimated(true), 100);
-    return () => clearTimeout(t);
-  }, []);
+    if (animateNow) setAnimated(true);
+  }, [animateNow]);
 
   if (total === 0) {
     return (
@@ -195,15 +233,20 @@ function AnimatedDonutChart({
 }
 
 // ─── Animated Weekly Bar Chart ───────────────────────────────────────────────
-function WeeklyBarChart({ expenses }: { expenses: Expense[] }) {
+function WeeklyBarChart({
+  expenses,
+  animateNow,
+}: { expenses: Expense[]; animateNow: boolean }) {
   const [barsVisible, setBarsVisible] = useState(false);
   const today = new Date();
   const todayKey = todayStr();
 
   useEffect(() => {
-    const t = setTimeout(() => setBarsVisible(true), 300);
-    return () => clearTimeout(t);
-  }, []);
+    if (animateNow) {
+      const t = setTimeout(() => setBarsVisible(true), 150);
+      return () => clearTimeout(t);
+    }
+  }, [animateNow]);
 
   const days = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(today);
@@ -316,7 +359,7 @@ function Greeting({ name }: { name?: string }) {
   );
 }
 
-// ─── Stat Card ───────────────────────────────────────────────────────────────
+// ─── Stat Card ──────────────────────────────────────────────────────────────
 interface StatCardProps {
   icon: React.ReactNode;
   label: string;
@@ -324,6 +367,7 @@ interface StatCardProps {
   sub?: React.ReactNode;
   gradient: string;
   delay?: number;
+  animationDelay?: number;
 }
 function StatCard({
   icon,
@@ -332,15 +376,16 @@ function StatCard({
   sub,
   gradient,
   delay = 0,
+  animationDelay,
 }: StatCardProps) {
   return (
     <div
-      className="rounded-2xl p-4 flex-shrink-0 w-[160px] hover:scale-[1.02] transition-transform cursor-default select-none"
+      className="rounded-2xl p-4 flex-shrink-0 w-[160px] hover:scale-[1.02] transition-transform cursor-default select-none animate-slide-up-card"
       style={{
         background: gradient,
         boxShadow:
           "0 4px 20px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.15)",
-        animationDelay: `${delay}ms`,
+        animationDelay: `${animationDelay ?? delay}ms`,
       }}
     >
       <div
@@ -381,6 +426,17 @@ export default function Dashboard({
   onNavigate,
 }: Props) {
   const [balanceVisible, setBalanceVisible] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
+  const [countUpEnabled, setCountUpEnabled] = useState(false);
+
+  useEffect(() => {
+    const shimmerTimer = setTimeout(() => {
+      setIsLoading(false);
+      // Start count-up slightly after shimmer dissolves
+      setTimeout(() => setCountUpEnabled(true), 100);
+    }, 1000);
+    return () => clearTimeout(shimmerTimer);
+  }, []);
 
   // Derived values
   const balance = availableBalance(profile, expenses);
@@ -401,6 +457,13 @@ export default function Dashboard({
   const totalEMI = totalEMIBurden(loans);
   const totalOwed = totalOutstanding(loans);
   const { score } = healthScore(profile, expenses);
+
+  // Animated count-up values
+  const animatedBalance = useCountUp(balance, 1200, countUpEnabled);
+  const animatedSpent = useCountUp(spent, 1000, countUpEnabled);
+  const animatedSaved = useCountUp(saved, 1000, countUpEnabled);
+  const animatedIncome = useCountUp(profile.monthlyIncome, 900, countUpEnabled);
+  const animatedFixed = useCountUp(profile.fixedExpenses, 900, countUpEnabled);
 
   // Recent transactions
   const recentExpenses = [...expenses]
@@ -516,109 +579,140 @@ export default function Dashboard({
             </button>
           </div>
 
-          {/* Balance */}
-          <p
-            className="text-4xl font-extrabold text-white tracking-tight leading-tight select-none"
-            style={{
-              letterSpacing: "-0.02em",
-              filter: balanceVisible ? "none" : "blur(0px)",
-            }}
-          >
-            {balanceVisible ? fmtFull(balance) : hiddenBalance}
-          </p>
-          <p className="text-xs text-white/50 mt-1">
-            {balanceVisible
-              ? `${fmtFull(spent)} spent of ${fmtFull(budget)} budget`
-              : "Tap eye to reveal"}
-          </p>
-
-          {/* Mini pill cards */}
-          <div className="mt-4 grid grid-cols-3 gap-2">
-            {[
-              {
-                label: "Income",
-                value: balanceVisible ? fmt(profile.monthlyIncome) : "₹ •••",
-              },
-              {
-                label: "Fixed",
-                value: balanceVisible ? fmt(profile.fixedExpenses) : "₹ •••",
-              },
-              { label: "Saved", value: balanceVisible ? fmt(saved) : "₹ •••" },
-            ].map((s) => (
-              <div
-                key={s.label}
-                className="rounded-xl p-2.5 text-center"
+          {/* Balance content — shimmer or real */}
+          {isLoading ? (
+            <div className="space-y-3 mt-2">
+              <ShimmerBlock className="h-10 w-48" />
+              <ShimmerBlock className="h-3 w-36" />
+              <div className="grid grid-cols-3 gap-2 mt-4">
+                <ShimmerBlock className="h-14" />
+                <ShimmerBlock className="h-14" />
+                <ShimmerBlock className="h-14" />
+              </div>
+            </div>
+          ) : (
+            <>
+              {/* Balance */}
+              <p
+                className="text-4xl font-extrabold text-white tracking-tight leading-tight select-none"
                 style={{
-                  background: "rgba(255,255,255,0.1)",
-                  backdropFilter: "blur(8px)",
+                  letterSpacing: "-0.02em",
+                  filter: balanceVisible ? "none" : "blur(0px)",
                 }}
               >
-                <p className="text-[10px] text-white/50 mb-0.5">{s.label}</p>
-                <p className="text-xs font-bold text-white">{s.value}</p>
+                {balanceVisible ? fmtFull(animatedBalance) : hiddenBalance}
+              </p>
+              <p className="text-xs text-white/50 mt-1">
+                {balanceVisible
+                  ? `${fmtFull(animatedSpent)} spent of ${fmtFull(budget)} budget`
+                  : "Tap eye to reveal"}
+              </p>
+
+              {/* Mini pill cards */}
+              <div className="mt-4 grid grid-cols-3 gap-2">
+                {[
+                  {
+                    label: "Income",
+                    value: balanceVisible ? fmt(animatedIncome) : "₹ •••",
+                  },
+                  {
+                    label: "Fixed",
+                    value: balanceVisible ? fmt(animatedFixed) : "₹ •••",
+                  },
+                  {
+                    label: "Saved",
+                    value: balanceVisible ? fmt(animatedSaved) : "₹ •••",
+                  },
+                ].map((s) => (
+                  <div
+                    key={s.label}
+                    className="rounded-xl p-2.5 text-center"
+                    style={{
+                      background: "rgba(255,255,255,0.1)",
+                      backdropFilter: "blur(8px)",
+                    }}
+                  >
+                    <p className="text-[10px] text-white/50 mb-0.5">
+                      {s.label}
+                    </p>
+                    <p className="text-xs font-bold text-white">{s.value}</p>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </>
+          )}
         </div>
       </div>
 
       {/* ── 3 STAT CARDS (horizontal scroll) ── */}
       <div className="animate-fade-up" style={{ animationDelay: "120ms" }}>
-        <div className="flex gap-3 overflow-x-auto scrollbar-none pb-1">
-          {/* Card 1: Monthly Spending */}
-          <StatCard
-            icon={<TrendingDown className="w-5 h-5 text-white" />}
-            label="Monthly Spending"
-            value={fmt(spent)}
-            sub={
-              <p className="text-[10px] text-white/60">
-                of {fmt(budget)} budget
-              </p>
-            }
-            gradient="linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%)"
-            delay={0}
-          />
-          {/* Card 2: Budget Left */}
-          <StatCard
-            icon={<Wallet className="w-5 h-5 text-white" />}
-            label="Budget Left"
-            value={fmt(balance)}
-            sub={
-              <div>
-                <div
-                  className="h-1.5 rounded-full overflow-hidden"
-                  style={{ background: "rgba(255,255,255,0.2)" }}
-                >
-                  <div
-                    className="h-full rounded-full"
-                    style={{
-                      width: `${Math.min(100, budgetPct)}%`,
-                      background: "rgba(255,255,255,0.8)",
-                      transition: "width 0.8s ease",
-                    }}
-                  />
-                </div>
-                <p className="text-[10px] text-white/60 mt-1">
-                  {Math.round(budgetPct)}% used
+        {isLoading ? (
+          <div className="flex gap-3 overflow-x-auto scrollbar-none pb-1">
+            {[0, 1, 2].map((i) => (
+              <ShimmerBlock
+                key={i}
+                className="rounded-2xl flex-shrink-0 w-[160px] h-[120px]"
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="flex gap-3 overflow-x-auto scrollbar-none pb-1">
+            {/* Card 1: Monthly Spending */}
+            <StatCard
+              icon={<TrendingDown className="w-5 h-5 text-white" />}
+              label="Monthly Spending"
+              value={fmt(animatedSpent)}
+              sub={
+                <p className="text-[10px] text-white/60">
+                  of {fmt(budget)} budget
                 </p>
-              </div>
-            }
-            gradient="linear-gradient(135deg, #4FA6FF 0%, #2E86AB 100%)"
-            delay={80}
-          />
-          {/* Card 3: Savings */}
-          <StatCard
-            icon={<Target className="w-5 h-5 text-white" />}
-            label="Savings"
-            value={fmt(saved)}
-            sub={
-              <p className="text-[10px] text-white/60">
-                {Math.round(savingsPct)}% of goal
-              </p>
-            }
-            gradient="linear-gradient(135deg, #2EE59D 0%, #0BA360 100%)"
-            delay={160}
-          />
-        </div>
+              }
+              gradient="linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%)"
+              animationDelay={0}
+            />
+            {/* Card 2: Budget Left */}
+            <StatCard
+              icon={<Wallet className="w-5 h-5 text-white" />}
+              label="Budget Left"
+              value={fmt(animatedBalance)}
+              sub={
+                <div>
+                  <div
+                    className="h-1.5 rounded-full overflow-hidden"
+                    style={{ background: "rgba(255,255,255,0.2)" }}
+                  >
+                    <div
+                      className="h-full rounded-full"
+                      style={{
+                        width: `${Math.min(100, budgetPct)}%`,
+                        background: "rgba(255,255,255,0.8)",
+                        transition: "width 0.8s ease",
+                      }}
+                    />
+                  </div>
+                  <p className="text-[10px] text-white/60 mt-1">
+                    {Math.round(budgetPct)}% used
+                  </p>
+                </div>
+              }
+              gradient="linear-gradient(135deg, #4FA6FF 0%, #2E86AB 100%)"
+              animationDelay={80}
+            />
+            {/* Card 3: Savings */}
+            <StatCard
+              icon={<Target className="w-5 h-5 text-white" />}
+              label="Savings"
+              value={fmt(animatedSaved)}
+              sub={
+                <p className="text-[10px] text-white/60">
+                  {Math.round(savingsPct)}% of goal
+                </p>
+              }
+              gradient="linear-gradient(135deg, #2EE59D 0%, #0BA360 100%)"
+              animationDelay={160}
+            />
+          </div>
+        )}
       </div>
 
       {/* ── TODAY'S STATUS ROW ── */}
@@ -758,7 +852,11 @@ export default function Dashboard({
           </p>
           <p className="text-xs text-muted-foreground">This Month</p>
         </div>
-        <AnimatedDonutChart catSpend={catSpend} />
+        {isLoading ? (
+          <ShimmerBlock className="h-[180px]" />
+        ) : (
+          <AnimatedDonutChart catSpend={catSpend} animateNow={countUpEnabled} />
+        )}
       </div>
 
       {/* Weekly Bar Chart */}
@@ -771,7 +869,11 @@ export default function Dashboard({
           <p className="text-sm font-bold text-foreground">This Week</p>
           <p className="text-xs text-muted-foreground">Daily Spending</p>
         </div>
-        <WeeklyBarChart expenses={expenses} />
+        {isLoading ? (
+          <ShimmerBlock className="h-[140px]" />
+        ) : (
+          <WeeklyBarChart expenses={expenses} animateNow={countUpEnabled} />
+        )}
       </div>
 
       {/* ── RECENT TRANSACTIONS ── */}
@@ -874,7 +976,7 @@ export default function Dashboard({
           </div>
           <Progress value={budgetPct} className="h-2.5" />
           <div className="flex justify-between text-xs text-muted-foreground mt-1.5">
-            <span>{fmtFull(spent)} spent</span>
+            <span>{fmtFull(animatedSpent)} spent</span>
             <span>{fmtFull(budget)} total</span>
           </div>
         </div>
@@ -890,7 +992,7 @@ export default function Dashboard({
           </div>
           <Progress value={savingsPct} className="h-2.5" />
           <div className="flex justify-between text-xs text-muted-foreground mt-1.5">
-            <span>{fmtFull(saved)} saved</span>
+            <span>{fmtFull(animatedSaved)} saved</span>
             <span>{fmtFull(profile.savingsGoal)} goal</span>
           </div>
         </div>

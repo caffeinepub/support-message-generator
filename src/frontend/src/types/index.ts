@@ -41,6 +41,7 @@ export interface ChatMessage {
 export type Screen =
   | "dashboard"
   | "expenses"
+  | "history"
   | "goals"
   | "chat"
   | "loans"

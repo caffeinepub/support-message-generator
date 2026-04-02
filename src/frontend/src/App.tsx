@@ -9,6 +9,7 @@ import ChatScreen from "./screens/ChatScreen";
 import Dashboard from "./screens/Dashboard";
 import ExpensesScreen from "./screens/Expenses";
 import GoalsScreen from "./screens/Goals";
+import HistoryScreen from "./screens/HistoryScreen";
 import LoanScreen from "./screens/LoanScreen";
 import LoginScreen from "./screens/LoginScreen";
 import ProfileScreen from "./screens/ProfileScreen";
@@ -55,7 +56,6 @@ export default function App() {
   }, [theme]);
 
   function handleSplashComplete() {
-    // Check if already logged in
     const auth = storage.getAuth();
     if (auth?.email) {
       setUserName(auth!.name);
@@ -237,6 +237,14 @@ export default function App() {
               expenses={expenses}
               onAdd={handleAddExpense}
               onDelete={handleDeleteExpense}
+              onNavigate={setScreen}
+            />
+          )}
+          {screen === "history" && (
+            <HistoryScreen
+              expenses={expenses}
+              onDelete={handleDeleteExpense}
+              onNavigate={setScreen}
             />
           )}
           {screen === "goals" && (

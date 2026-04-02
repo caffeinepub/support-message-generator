@@ -1,4 +1,4 @@
-import { Brain, Home, Plus, Target, User } from "lucide-react";
+import { Home, Plus, Receipt, Target, User } from "lucide-react";
 import type { Screen } from "../types";
 
 interface Props {
@@ -12,7 +12,7 @@ const LEFT_TABS: {
   Icon: React.FC<{ className?: string }>;
 }[] = [
   { id: "dashboard", label: "Home", Icon: Home },
-  { id: "insights", label: "Insights", Icon: Brain },
+  { id: "history", label: "History", Icon: Receipt },
 ];
 
 const RIGHT_TABS: {
