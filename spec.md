@@ -1,28 +1,34 @@
-# AI Customer Support Agent
+# AI Cash Manager
 
 ## Current State
-The app has a Dashboard with a single "Orders Request" main tab containing order-scenario sub-tabs. The backend has a basic chat/session system. No inventory management exists.
+New project — no existing application files.
 
 ## Requested Changes (Diff)
 
 ### Add
-- New "Inventory" main tab in the Dashboard
-- SKU input field where the user types a SKU and triggers a search
-- Backend inventory store: a map of SKU -> unit count with pre-seeded sample data
-- Backend query function: `checkInventory(sku: Text) -> ?Nat` (returns null if not found)
-- Backend admin function: `addInventoryItem(sku: Text, units: Nat) -> Bool`
-- Frontend result display: shows "Available - X units" in green if found, "Not Available" in red if not found
-- Search button + Enter key support for triggering lookup
+- User onboarding flow: collect monthly income, fixed expenses, savings goal
+- Dashboard: total balance, today's spending limit, monthly budget overview, savings progress bar
+- Expense tracking: manual add form, auto-categorization (Food, Travel, Shopping, Bills)
+- AI Budget Engine: calculate daily spending limit = (income - fixed expenses - savings goal) / days in month; adjust next day's limit if overspent today
+- Smart Alerts: in-app notifications for overspending, low balance, high category spending
+- Goal System: user sets a savings goal, shows daily/monthly savings needed
+- AI Assistant Chat: simple rule-based chat that answers questions like "Can I spend ₹500 today?" and "How to save more?"
+- Financial Health Score (0-100): calculated from savings %, spending discipline, budget adherence
+- Dark/Light mode toggle
 
 ### Modify
-- App.tsx: Add Inventory tab to DASH_TABS and render InventoryTab component
-- backend/main.mo: Add inventory store and query/add functions
+- N/A (new project)
 
 ### Remove
-- Nothing removed
+- N/A
 
 ## Implementation Plan
-1. Update Motoko backend with inventory map, checkInventory query, addInventoryItem update
-2. Seed a few sample SKUs (e.g. SKU-001, SKU-002, etc.) for demo
-3. Create InventoryTab component with SKU input, search, and result display
-4. Add Inventory tab to Dashboard in App.tsx
+1. Backend: store user profile (income, fixed expenses, savings goal), expenses (amount, category, date, note), and compute budget stats
+2. Frontend: onboarding screen → main dashboard with bottom nav (Dashboard, Expenses, Goals, Chat, Score)
+3. Dashboard tab: balance card, daily limit card, budget ring, savings progress
+4. Expenses tab: add expense form with category picker, expense list
+5. Goals tab: goal card with progress, daily/monthly savings needed
+6. Chat tab: AI assistant with rule-based financial advice
+7. Health Score tab: score gauge with breakdown
+8. Alerts: banner notifications shown when thresholds crossed
+9. Dark/light mode via CSS variables

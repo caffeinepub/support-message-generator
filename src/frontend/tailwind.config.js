@@ -15,11 +15,10 @@ export default {
     extend: {
       fontFamily: {
         sans: ['"Plus Jakarta Sans"', 'sans-serif'],
-        mono: ['"JetBrains Mono"', 'monospace'],
       },
       colors: {
-        border: "oklch(var(--border))",
-        input: "oklch(var(--input))",
+        border: "oklch(var(--border) / <alpha-value>)",
+        input: "oklch(var(--input) / <alpha-value>)",
         ring: "oklch(var(--ring) / <alpha-value>)",
         background: "oklch(var(--background))",
         foreground: "oklch(var(--foreground))",
@@ -53,7 +52,7 @@ export default {
         },
         success: { DEFAULT: "oklch(var(--success))" },
         warning: { DEFAULT: "oklch(var(--warning))" },
-        nav: { DEFAULT: "oklch(var(--nav-bg))" },
+        brand: { DEFAULT: "oklch(var(--brand))" },
         chart: {
           1: "oklch(var(--chart-1))",
           2: "oklch(var(--chart-2))",
@@ -74,8 +73,15 @@ export default {
       },
       borderRadius: {
         lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+        md: "calc(var(--radius) - 4px)",
+        sm: "calc(var(--radius) - 8px)",
+        xl: "20px",
+        "2xl": "24px",
+      },
+      boxShadow: {
+        card: "0 18px 40px rgba(0,0,0,0.45)",
+        brand: "0 0 20px rgba(24,199,183,0.35)",
+        "brand-lg": "0 0 40px rgba(24,199,183,0.25)",
       },
       keyframes: {
         "accordion-down": {
