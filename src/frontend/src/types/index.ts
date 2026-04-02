@@ -1,5 +1,7 @@
 export type Category = "Food" | "Travel" | "Shopping" | "Bills" | "Other";
 
+export type LoanType = "Home" | "Car" | "Personal" | "Education" | "Other";
+
 export interface UserProfile {
   monthlyIncome: number;
   fixedExpenses: number;
@@ -16,6 +18,19 @@ export interface Expense {
   date: string; // YYYY-MM-DD
 }
 
+export interface Loan {
+  id: string;
+  name: string; // e.g. "Home Loan"
+  lender: string; // e.g. "HDFC Bank"
+  loanType: LoanType;
+  principal: number; // original loan amount
+  interestRate: number; // % per annum
+  tenureMonths: number; // total tenure
+  emiAmount: number; // monthly EMI
+  startDate: string; // YYYY-MM-DD
+  paidMonths: number; // how many EMIs paid so far
+}
+
 export interface ChatMessage {
   id: string;
   text: string;
@@ -23,4 +38,4 @@ export interface ChatMessage {
   timestamp: number;
 }
 
-export type Screen = "dashboard" | "expenses" | "goals" | "chat" | "score";
+export type Screen = "dashboard" | "expenses" | "goals" | "chat" | "loans";

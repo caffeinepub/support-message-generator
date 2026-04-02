@@ -7,8 +7,8 @@ import ChatScreen from "./screens/ChatScreen";
 import Dashboard from "./screens/Dashboard";
 import ExpensesScreen from "./screens/Expenses";
 import GoalsScreen from "./screens/Goals";
-import ScoreScreen from "./screens/ScoreScreen";
-import type { ChatMessage, Expense, Screen, UserProfile } from "./types";
+import LoanScreen from "./screens/LoanScreen";
+import type { ChatMessage, Expense, Loan, Screen, UserProfile } from "./types";
 
 export default function App() {
   const [profile, setProfile] = useState<UserProfile | null>(() =>
@@ -17,6 +17,7 @@ export default function App() {
   const [expenses, setExpenses] = useState<Expense[]>(() =>
     storage.getExpenses(),
   );
+  const [loans, setLoans] = useState<Loan[]>(() => storage.getLoans());
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>(() =>
     storage.getChat(),
   );
@@ -62,6 +63,29 @@ export default function App() {
     storage.setExpenses(updated);
   }
 
+  function handleAddLoan(l: Omit<Loan, "id">) {
+    const newLoan: Loan = { ...l, id: Date.now().toString() };
+    const updated = [newLoan, ...loans];
+    setLoans(updated);
+    storage.setLoans(updated);
+  }
+
+  function handleDeleteLoan(id: string) {
+    const updated = loans.filter((l) => l.id !== id);
+    setLoans(updated);
+    storage.setLoans(updated);
+  }
+
+  function handleMarkEMIPaid(id: string) {
+    const updated = loans.map((l) =>
+      l.id === id
+        ? { ...l, paidMonths: Math.min(l.paidMonths + 1, l.tenureMonths) }
+        : l,
+    );
+    setLoans(updated);
+    storage.setLoans(updated);
+  }
+
   function handleChatUpdate(msgs: ChatMessage[]) {
     setChatMessages(msgs);
     storage.setChat(msgs);
@@ -71,7 +95,6 @@ export default function App() {
     setTheme((t) => (t === "dark" ? "light" : "dark"));
   }
 
-  // Navigate to expenses and show form
   function goToAddExpense() {
     setScreen("expenses");
   }
@@ -101,6 +124,7 @@ export default function App() {
             <Dashboard
               profile={profile}
               expenses={expenses}
+              loans={loans}
               onAddExpense={goToAddExpense}
               theme={theme}
               onToggleTheme={toggleTheme}
@@ -125,11 +149,18 @@ export default function App() {
               messages={chatMessages}
               profile={profile}
               expenses={expenses}
+              loans={loans}
               onSendMessage={handleChatUpdate}
             />
           )}
-          {screen === "score" && (
-            <ScoreScreen profile={profile} expenses={expenses} />
+          {screen === "loans" && (
+            <LoanScreen
+              loans={loans}
+              profile={profile}
+              onAdd={handleAddLoan}
+              onDelete={handleDeleteLoan}
+              onMarkPaid={handleMarkEMIPaid}
+            />
           )}
         </main>
 

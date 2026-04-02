@@ -2,14 +2,14 @@ import { Button } from "@/components/ui/button";
 import { Bot, Send, Sparkles, User } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { getAIResponse } from "../lib/chatAI";
-import type { ChatMessage, Expense, UserProfile } from "../types";
+import type { ChatMessage, Expense, Loan, UserProfile } from "../types";
 
 const SUGGESTIONS = [
   "Can I spend ₹500 today?",
-  "How to save more?",
+  "My loans",
+  "How to repay faster?",
   "Show my budget",
-  "My expenses",
-  "Health score",
+  "How to save more?",
   "Goal progress",
 ];
 
@@ -17,6 +17,7 @@ interface Props {
   messages: ChatMessage[];
   profile: UserProfile;
   expenses: Expense[];
+  loans: Loan[];
   onSendMessage: (msgs: ChatMessage[]) => void;
 }
 
@@ -44,6 +45,7 @@ export default function ChatScreen({
   messages,
   profile,
   expenses,
+  loans,
   onSendMessage,
 }: Props) {
   const [input, setInput] = useState("");
@@ -72,7 +74,7 @@ export default function ChatScreen({
     setTyping(true);
     setTimeout(
       () => {
-        const aiText = getAIResponse(trimmed, profile, expenses);
+        const aiText = getAIResponse(trimmed, profile, expenses, loans);
         const aiMsg: ChatMessage = {
           id: (Date.now() + 1).toString(),
           text: aiText,
@@ -135,7 +137,7 @@ export default function ChatScreen({
               Hi! I&apos;m your AI Cash Manager
             </p>
             <p className="text-xs text-muted-foreground mt-1">
-              Ask me anything about your finances
+              Ask me anything about your finances or loans
             </p>
           </div>
         )}

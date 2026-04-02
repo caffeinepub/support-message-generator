@@ -1,4 +1,4 @@
-import type { Expense, UserProfile } from "../types";
+import type { Expense, Loan, UserProfile } from "../types";
 
 export function toDateStr(d: Date): string {
   return d.toISOString().slice(0, 10);
@@ -35,7 +35,7 @@ export function baseDailyLimit(profile: UserProfile): number {
   return Math.max(0, disposable / daysInCurrentMonth());
 }
 
-/** Adjusted daily limit — reduces by yesterday’s overspend if any */
+/** Adjusted daily limit — reduces by yesterday's overspend if any */
 export function adjustedDailyLimit(
   profile: UserProfile,
   expenses: Expense[],
@@ -164,4 +164,94 @@ export function fmt(n: number): string {
 /** Format number as full ₹ with locale */
 export function fmtFull(n: number): string {
   return `₹${n.toLocaleString("en-IN")}`;
+}
+
+// ─── Loan Calculations ───────────────────────────────────────────────────────
+
+/** Remaining months left to pay */
+export function loanRemainingMonths(loan: Loan): number {
+  return Math.max(0, loan.tenureMonths - loan.paidMonths);
+}
+
+/** Amount paid so far (principal + interest portion = EMI * paidMonths) */
+export function loanAmountPaid(loan: Loan): number {
+  return loan.emiAmount * loan.paidMonths;
+}
+
+/** Total payable over full tenure */
+export function loanTotalPayable(loan: Loan): number {
+  return loan.emiAmount * loan.tenureMonths;
+}
+
+/** Total interest component */
+export function loanTotalInterest(loan: Loan): number {
+  return Math.max(0, loanTotalPayable(loan) - loan.principal);
+}
+
+/** Outstanding principal (approx using reducing balance) */
+export function loanOutstanding(loan: Loan): number {
+  const r = loan.interestRate / 100 / 12;
+  if (r === 0) {
+    return Math.max(
+      0,
+      loan.principal - (loan.principal / loan.tenureMonths) * loan.paidMonths,
+    );
+  }
+  const n = loan.tenureMonths;
+  const p = loan.principal;
+  // EMI formula: P * r * (1+r)^n / ((1+r)^n - 1)
+  const paid = loan.paidMonths;
+  const _outstanding =
+    p * (1 + r) ** n -
+    loan.emiAmount * (((1 + r) ** paid - 1) / r) * (1 + r) ** (n - paid);
+  // Simplified: use remaining EMIs approach
+  const remaining = loanRemainingMonths(loan);
+  if (remaining <= 0) return 0;
+  return (loan.emiAmount * (1 - (1 + r) ** -remaining)) / r;
+}
+
+/** Progress percentage (paid months / tenure) */
+export function loanProgressPct(loan: Loan): number {
+  return Math.min(100, Math.round((loan.paidMonths / loan.tenureMonths) * 100));
+}
+
+/** Total monthly EMI burden across all loans */
+export function totalEMIBurden(loans: Loan[]): number {
+  return loans
+    .filter((l) => loanRemainingMonths(l) > 0)
+    .reduce((s, l) => s + l.emiAmount, 0);
+}
+
+/** Total outstanding across all loans */
+export function totalOutstanding(loans: Loan[]): number {
+  return loans.reduce((s, l) => s + loanOutstanding(l), 0);
+}
+
+/** Interest saved if prepaid X amount today (approx months reduced) */
+export function interestSavedByPrepayment(
+  loan: Loan,
+  prepayAmount: number,
+): {
+  monthsReduced: number;
+  interestSaved: number;
+} {
+  const r = loan.interestRate / 100 / 12;
+  const remaining = loanRemainingMonths(loan);
+  if (remaining <= 0 || prepayAmount <= 0)
+    return { monthsReduced: 0, interestSaved: 0 };
+  const outstanding = loanOutstanding(loan);
+  const newOutstanding = Math.max(0, outstanding - prepayAmount);
+  let newTenure = remaining;
+  if (r > 0) {
+    newTenure = Math.ceil(
+      Math.log(loan.emiAmount / (loan.emiAmount - newOutstanding * r)) /
+        Math.log(1 + r),
+    );
+  } else {
+    newTenure = Math.ceil(newOutstanding / loan.emiAmount);
+  }
+  const monthsReduced = Math.max(0, remaining - newTenure);
+  const interestSaved =
+    monthsReduced * loan.emiAmount - (outstanding - newOutstanding);
+  return { monthsReduced, interestSaved: Math.max(0, interestSaved) };
 }

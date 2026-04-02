@@ -19,12 +19,15 @@ import {
   monthlySpent,
   savedThisMonth,
   todayStr,
+  totalEMIBurden,
+  totalOutstanding,
 } from "../lib/engine";
-import type { Expense, UserProfile } from "../types";
+import type { Expense, Loan, UserProfile } from "../types";
 
 interface Props {
   profile: UserProfile;
   expenses: Expense[];
+  loans: Loan[];
   onAddExpense: () => void;
   theme: "dark" | "light";
   onToggleTheme: () => void;
@@ -50,6 +53,7 @@ function Greeting() {
 export default function Dashboard({
   profile,
   expenses,
+  loans,
   onAddExpense,
   onToggleTheme,
 }: Props) {
@@ -68,6 +72,9 @@ export default function Dashboard({
       : 0;
   const topCat = Object.entries(catSpend).sort((a, b) => b[1] - a[1])[0];
   const totalSpent = Object.values(catSpend).reduce((s, v) => s + v, 0);
+
+  const totalEMI = totalEMIBurden(loans);
+  const totalOwed = totalOutstanding(loans);
 
   const alerts: { icon: React.ReactNode; text: string; color: string }[] = [];
   if (todaySpent > dailyLimit && dailyLimit > 0) {
@@ -89,6 +96,17 @@ export default function Dashboard({
       icon: <ShoppingBag className="w-4 h-4" />,
       text: `High spending in ${topCat[0]}: ${fmt(topCat[1])} (${Math.round((topCat[1] / totalSpent) * 100)}% of total)`,
       color: "text-warning bg-warning/10 border-warning/20",
+    });
+  }
+  if (
+    totalEMI > 0 &&
+    profile.monthlyIncome > 0 &&
+    totalEMI / profile.monthlyIncome > 0.5
+  ) {
+    alerts.push({
+      icon: <AlertTriangle className="w-4 h-4" />,
+      text: `Loan EMI burden (${fmtFull(totalEMI)}/mo) exceeds 50% of income — high debt risk!`,
+      color: "text-destructive bg-destructive/10 border-destructive/20",
     });
   }
 
@@ -159,6 +177,40 @@ export default function Dashboard({
           </div>
         </div>
       </div>
+
+      {/* Loan Burden Card (shown only if loans exist) */}
+      {totalEMI > 0 && (
+        <div className="glass-card p-4 border border-destructive/20 bg-destructive/5">
+          <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2">
+            💳 Loan Burden
+          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs text-muted-foreground">Total EMI/month</p>
+              <p className="text-xl font-bold text-destructive">
+                {fmtFull(totalEMI)}
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="text-xs text-muted-foreground">Total Outstanding</p>
+              <p className="text-xl font-bold text-foreground">
+                {fmt(totalOwed)}
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="text-xs text-muted-foreground">Active Loans</p>
+              <p className="text-xl font-bold text-foreground">
+                {
+                  loans.filter((l) => {
+                    const r = l.tenureMonths - l.paidMonths;
+                    return r > 0;
+                  }).length
+                }
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Daily Limit Card */}
       <div

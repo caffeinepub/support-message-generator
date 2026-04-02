@@ -1,5 +1,5 @@
 import {
-  Activity,
+  BadgeIndianRupee,
   LayoutDashboard,
   List,
   MessageCircle,
@@ -21,7 +21,7 @@ const TABS: {
   { id: "expenses", label: "Expenses", Icon: List },
   { id: "goals", label: "Goals", Icon: Target },
   { id: "chat", label: "Chat", Icon: MessageCircle },
-  { id: "score", label: "Score", Icon: Activity },
+  { id: "loans", label: "Loans", Icon: BadgeIndianRupee },
 ];
 
 export default function BottomNav({ active, onChange }: Props) {

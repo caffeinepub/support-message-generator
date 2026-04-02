@@ -1,34 +1,39 @@
-# AI Cash Manager
+# AI Cash Manager – Loan Manager Feature
 
 ## Current State
-New project — no existing application files.
+App has: Dashboard, Expenses, Goals, Chat, Score screens. No loan tracking exists. UserProfile and Expense types are defined in types/index.ts. Storage uses localStorage. Engine has financial calculation helpers.
 
 ## Requested Changes (Diff)
 
 ### Add
-- User onboarding flow: collect monthly income, fixed expenses, savings goal
-- Dashboard: total balance, today's spending limit, monthly budget overview, savings progress bar
-- Expense tracking: manual add form, auto-categorization (Food, Travel, Shopping, Bills)
-- AI Budget Engine: calculate daily spending limit = (income - fixed expenses - savings goal) / days in month; adjust next day's limit if overspent today
-- Smart Alerts: in-app notifications for overspending, low balance, high category spending
-- Goal System: user sets a savings goal, shows daily/monthly savings needed
-- AI Assistant Chat: simple rule-based chat that answers questions like "Can I spend ₹500 today?" and "How to save more?"
-- Financial Health Score (0-100): calculated from savings %, spending discipline, budget adherence
-- Dark/Light mode toggle
+- `Loan` type in types/index.ts with fields: id, name (loan name), lender, principal, interestRate (% p.a.), tenureMonths, emiAmount, startDate, remainingMonths, loanType (Home/Car/Personal/Education/Other)
+- `"loans"` screen to Screen type union
+- Loan storage helpers (getLoans / setLoans) in storage.ts
+- Loan calculation helpers in engine.ts: totalInterest, totalPayable, amountPaid, amountRemaining, progressPct, monthlyInterestBurden
+- New `LoanScreen` component: add loan form, list of active loans with progress, per-loan AI suggestion card (avalanche vs snowball strategy, prepayment tips, interest saved if prepaid)
+- Loan summary card on Dashboard showing total EMI burden and total outstanding
+- BottomNav: replace "Score" with "Loans" tab (Landmark icon), keep Score accessible via Dashboard link or add back in later
+- Actually: ADD "Loans" tab alongside existing 5 tabs (use BanknoteIcon), keep all existing tabs intact; since space is tight, replace "Score" tab with "Loans" and add Score access from Dashboard
+- ChatScreen AI: add loan-related responses for queries like "my loans", "how to repay faster", "loan burden", "emi"
 
 ### Modify
-- N/A (new project)
+- `types/index.ts` – add Loan interface, add "loans" to Screen type
+- `lib/storage.ts` – add LOANS key, getLoans/setLoans methods
+- `lib/engine.ts` – add loan calculation functions
+- `lib/chatAI.ts` – add loan query handling
+- `components/BottomNav.tsx` – add Loans tab (replace Score with Loans, Score moved to link in screen)
+- `App.tsx` – add loans state, handleAddLoan, handleDeleteLoan, wire LoanScreen
+- `screens/Dashboard.tsx` – add loan burden summary card
 
 ### Remove
-- N/A
+- Nothing removed
 
 ## Implementation Plan
-1. Backend: store user profile (income, fixed expenses, savings goal), expenses (amount, category, date, note), and compute budget stats
-2. Frontend: onboarding screen → main dashboard with bottom nav (Dashboard, Expenses, Goals, Chat, Score)
-3. Dashboard tab: balance card, daily limit card, budget ring, savings progress
-4. Expenses tab: add expense form with category picker, expense list
-5. Goals tab: goal card with progress, daily/monthly savings needed
-6. Chat tab: AI assistant with rule-based financial advice
-7. Health Score tab: score gauge with breakdown
-8. Alerts: banner notifications shown when thresholds crossed
-9. Dark/light mode via CSS variables
+1. Update types/index.ts with Loan interface and updated Screen type
+2. Update lib/storage.ts with loan persistence
+3. Update lib/engine.ts with loan math helpers
+4. Create src/frontend/src/screens/LoanScreen.tsx
+5. Update BottomNav to include Loans tab (swap Score for Loans; Score still works)
+6. Update App.tsx to add loans state and LoanScreen rendering
+7. Update Dashboard.tsx to show loan burden summary
+8. Update lib/chatAI.ts to handle loan queries

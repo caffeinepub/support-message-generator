@@ -1,4 +1,4 @@
-import type { Expense, UserProfile } from "../types";
+import type { Expense, Loan, UserProfile } from "../types";
 import {
   adjustedDailyLimit,
   availableBalance,
@@ -7,18 +7,79 @@ import {
   fmt,
   fmtFull,
   healthScore,
+  loanOutstanding,
+  loanRemainingMonths,
+  loanTotalInterest,
   monthlyBudget,
   monthlySpent,
   savedThisMonth,
   todayStr,
+  totalEMIBurden,
+  totalOutstanding,
 } from "./engine";
 
 export function getAIResponse(
   input: string,
   profile: UserProfile,
   expenses: Expense[],
+  loans: Loan[] = [],
 ): string {
   const q = input.toLowerCase().trim();
+
+  // Loan-related queries
+  if (
+    q.includes("loan") ||
+    q.includes("emi") ||
+    q.includes("debt") ||
+    q.includes("repay") ||
+    q.includes("borrow")
+  ) {
+    if (loans.length === 0) {
+      return `📋 You haven't added any loans yet. Go to the **Loans** tab to add your loans and get personalized repayment suggestions!`;
+    }
+
+    const activeLoans = loans.filter((l) => loanRemainingMonths(l) > 0);
+    const totalEMI = totalEMIBurden(loans);
+    const totalOwed = totalOutstanding(loans);
+    const emiRatio =
+      profile.monthlyIncome > 0
+        ? Math.round((totalEMI / profile.monthlyIncome) * 100)
+        : 0;
+
+    if (
+      q.includes("repay faster") ||
+      q.includes("close loan") ||
+      q.includes("prepay")
+    ) {
+      const highestRateLoan = [...activeLoans].sort(
+        (a, b) => b.interestRate - a.interestRate,
+      )[0];
+      const smallestLoan = [...activeLoans].sort(
+        (a, b) => loanOutstanding(a) - loanOutstanding(b),
+      )[0];
+      return `🚀 **How to Repay Loans Faster:**\n\n**Avalanche Method (saves most money):**\nFocus extra payments on **${highestRateLoan?.name}** (${highestRateLoan?.interestRate}% p.a.) — highest interest rate first.\n\n**Snowball Method (fastest motivation):**\nClear **${smallestLoan?.name}** first (${fmt(loanOutstanding(smallestLoan))}) — smallest outstanding balance.\n\n**General Tips:**\n• Pay even ₹1,000 extra/month — it reduces tenure significantly\n• Use bonuses/salary increments for lump-sum prepayments\n• Avoid taking new loans until existing ones are cleared\n• Refinance if you find a lower interest rate option`;
+    }
+
+    const loanLines = activeLoans
+      .map(
+        (l) =>
+          `• **${l.name}** (${l.loanType}): ${fmtFull(l.emiAmount)}/mo, ${loanRemainingMonths(l)} months left, ${fmt(loanOutstanding(l))} outstanding`,
+      )
+      .join("\n");
+
+    const riskMsg =
+      emiRatio > 50
+        ? `\n\n⚠️ **High Debt Alert:** Your EMIs are ${emiRatio}% of income — this is risky. Focus on reducing debt urgently.`
+        : emiRatio > 35
+          ? `\n\n⚠️ Your EMI-to-income ratio is ${emiRatio}%. Try to keep it under 40%.`
+          : `\n\n✅ Your EMI-to-income ratio is ${emiRatio}% — within the safe range.`;
+
+    const totalInterest = activeLoans.reduce(
+      (s, l) => s + loanTotalInterest(l),
+      0,
+    );
+    return `💳 **Your Loan Summary:**\n\nTotal EMI/month: **${fmtFull(totalEMI)}**\nTotal Outstanding: **${fmt(totalOwed)}**\nTotal Interest You'll Pay: **${fmt(totalInterest)}**\n\n${loanLines}${riskMsg}\n\nAsk me "how to repay faster" for strategies!`;
+  }
 
   // Can I spend X today?
   const spendMatch = q.match(/spend[^₹\d]*(₹?\s*([\d,]+))/);
@@ -116,8 +177,8 @@ export function getAIResponse(
 
   // Hello / greeting
   if (q.match(/^(hi|hello|hey|namaste)/)) {
-    return `Namaste! 👋 I'm your AI Cash Manager. I can help you with:\n\n• Check if you can afford something today\n• Budget & spending summary\n• Savings tips\n• Goal progress\n• Financial health score\n\nJust ask me anything! 😊`;
+    return `Namaste! 👋 I'm your AI Cash Manager. I can help you with:\n\n• Check if you can afford something today\n• Budget & spending summary\n• Savings tips\n• Goal progress\n• Loan summary & repayment tips\n• Financial health score\n\nJust ask me anything! 😊`;
   }
 
-  return `🤔 I'm not sure about that, but here are some things I can help you with:\n\n• "Can I spend ₹500 today?"\n• "What's my budget status?"\n• "How to save more money?"\n• "Show my expenses"\n• "What's my health score?"\n• "How's my goal progress?"\n\nFeel free to ask!`;
+  return `🤔 I'm not sure about that, but here are some things I can help you with:\n\n• "Can I spend ₹500 today?"\n• "What's my budget status?"\n• "How to save more money?"\n• "Show my expenses"\n• "My loans" or "How to repay faster?"\n• "What's my health score?"\n• "How's my goal progress?"\n\nFeel free to ask!`;
 }

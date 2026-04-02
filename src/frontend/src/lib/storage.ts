@@ -1,4 +1,4 @@
-import type { ChatMessage, Expense, UserProfile } from "../types";
+import type { ChatMessage, Expense, Loan, UserProfile } from "../types";
 
 const KEYS = {
   PROFILE: "acm_profile",
@@ -6,6 +6,7 @@ const KEYS = {
   CHAT: "acm_chat",
   THEME: "acm_theme",
   DAILY_HISTORY: "acm_daily_history",
+  LOANS: "acm_loans",
 } as const;
 
 export const storage = {
@@ -62,5 +63,17 @@ export const storage = {
   },
   setDailyHistory(h: Record<string, number>) {
     localStorage.setItem(KEYS.DAILY_HISTORY, JSON.stringify(h));
+  },
+
+  getLoans(): Loan[] {
+    try {
+      const raw = localStorage.getItem(KEYS.LOANS);
+      return raw ? (JSON.parse(raw) as Loan[]) : [];
+    } catch {
+      return [];
+    }
+  },
+  setLoans(loans: Loan[]) {
+    localStorage.setItem(KEYS.LOANS, JSON.stringify(loans));
   },
 };
