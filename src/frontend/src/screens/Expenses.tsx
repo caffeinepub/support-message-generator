@@ -11,6 +11,7 @@ import {
   Zap,
 } from "lucide-react";
 import { useCallback, useState } from "react";
+import { useRipple } from "../hooks/useRipple";
 import { fmt, todayStr } from "../lib/engine";
 import type { Category, Expense, Screen } from "../types";
 
@@ -149,6 +150,7 @@ export default function ExpensesScreen({
   const [error, setError] = useState("");
   const [animatingCat, setAnimatingCat] = useState<Category | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
+  const ripple = useRipple();
 
   const handleNoteChange = useCallback((val: string) => {
     setNote(val);
@@ -186,7 +188,6 @@ export default function ExpensesScreen({
     .filter((e) => e.date.startsWith(todayStr().slice(0, 7)))
     .reduce((s, e) => s + e.amount, 0);
 
-  // Last 3 expenses for recent preview
   const recentExpenses = [...expenses]
     .sort((a, b) => b.date.localeCompare(a.date))
     .slice(0, 3);
@@ -340,10 +341,12 @@ export default function ExpensesScreen({
             </p>
           )}
 
-          {/* Save button — pulses when form is ready */}
+          {/* Save button — pulses when form is ready, ripple on tap */}
           <Button
             onClick={handleSubmit}
-            className="w-full h-11 font-semibold rounded-xl hover:opacity-90 transition-all"
+            onMouseDown={ripple}
+            onTouchStart={ripple}
+            className="ripple-container w-full h-11 font-semibold rounded-xl hover:opacity-90 transition-all"
             style={{
               background: "linear-gradient(135deg, #4FA6FF 0%, #7B5CFF 100%)",
               color: "white",
@@ -404,7 +407,9 @@ export default function ExpensesScreen({
                     <button
                       type="button"
                       onClick={() => onDelete(expense.id)}
-                      className="w-7 h-7 rounded-lg bg-destructive/10 text-destructive flex items-center justify-center flex-shrink-0 hover:bg-destructive/20 transition-colors"
+                      onMouseDown={ripple}
+                      onTouchStart={ripple}
+                      className="ripple-container w-7 h-7 rounded-lg bg-destructive/10 text-destructive flex items-center justify-center flex-shrink-0 hover:bg-destructive/20 transition-colors"
                       aria-label="Delete expense"
                       data-ocid={`expenses.delete_button.${i + 1}`}
                     >
@@ -419,9 +424,76 @@ export default function ExpensesScreen({
 
         {recentExpenses.length === 0 && (
           <div className="text-center py-10" data-ocid="expenses.empty_state">
-            <p className="text-4xl mb-3">💸</p>
-            <p className="text-muted-foreground font-medium">No expenses yet</p>
-            <p className="text-xs text-muted-foreground/60 mt-1">
+            <svg
+              viewBox="0 0 120 100"
+              className="w-28 h-24 mx-auto mb-3 opacity-40"
+              fill="none"
+              role="img"
+              aria-label="No expenses yet illustration"
+            >
+              <rect
+                x="20"
+                y="30"
+                width="80"
+                height="50"
+                rx="10"
+                stroke="currentColor"
+                strokeWidth="2"
+                className="text-muted-foreground"
+              />
+              <rect
+                x="20"
+                y="30"
+                width="80"
+                height="16"
+                rx="10"
+                fill="currentColor"
+                className="text-muted-foreground"
+                opacity="0.3"
+              />
+              <line
+                x1="35"
+                y1="60"
+                x2="85"
+                y2="60"
+                stroke="currentColor"
+                strokeWidth="2"
+                className="text-muted-foreground"
+                strokeLinecap="round"
+              />
+              <line
+                x1="35"
+                y1="72"
+                x2="65"
+                y2="72"
+                stroke="currentColor"
+                strokeWidth="2"
+                className="text-muted-foreground"
+                strokeLinecap="round"
+              />
+              <circle
+                cx="95"
+                cy="25"
+                r="12"
+                fill="currentColor"
+                className="text-primary"
+                opacity="0.5"
+              />
+              <line
+                x1="95"
+                y1="20"
+                x2="95"
+                y2="26"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+              <circle cx="95" cy="29" r="1.5" fill="white" />
+            </svg>
+            <p className="text-sm font-semibold text-foreground">
+              No expenses yet
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
               Add your first expense above
             </p>
           </div>

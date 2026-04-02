@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Check, Edit3, Target, TrendingUp, X } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   dailySavingsNeeded,
   fmt,
@@ -31,6 +31,12 @@ export default function GoalsScreen({
     String(profile.currentSavings),
   );
   const [err, setErr] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const t = setTimeout(() => setIsLoading(false), 500);
+    return () => clearTimeout(t);
+  }, []);
 
   const savedMonth = savedThisMonth(profile, expenses);
   const totalSaved = profile.currentSavings + savedMonth;
@@ -69,6 +75,47 @@ export default function GoalsScreen({
   }
 
   const milestones = [25, 50, 75, 100];
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col gap-4 px-4 pb-4">
+        <div className="pt-4 flex items-center justify-between">
+          <div className="space-y-2">
+            <div className="h-5 w-24 rounded shimmer-dark" />
+            <div className="h-3 w-40 rounded shimmer-dark" />
+          </div>
+          <div className="w-9 h-9 rounded-xl shimmer-dark" />
+        </div>
+        {/* Skeleton goal card */}
+        <div className="glass-card p-5 space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl shimmer-dark" />
+            <div className="space-y-2 flex-1">
+              <div className="h-4 w-32 rounded shimmer-dark" />
+              <div className="h-3 w-24 rounded shimmer-dark" />
+            </div>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="w-20 h-20 rounded-full shimmer-dark flex-shrink-0" />
+            <div className="flex-1 space-y-2">
+              <div className="h-7 w-28 rounded shimmer-dark" />
+              <div className="h-3 w-36 rounded shimmer-dark" />
+              <div className="h-2.5 rounded-full shimmer-dark" />
+            </div>
+          </div>
+        </div>
+        {/* Skeleton stats */}
+        <div className="grid grid-cols-2 gap-3">
+          {[0, 1, 2, 3].map((i) => (
+            <div key={i} className="glass-card p-4 space-y-2">
+              <div className="h-3 w-24 rounded shimmer-dark" />
+              <div className="h-6 w-20 rounded shimmer-dark" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-4 px-4 pb-4 animate-fade-up">
@@ -179,9 +226,7 @@ export default function GoalsScreen({
           </div>
         </div>
 
-        {/* Big progress */}
         <div className="flex items-center gap-4 mb-4">
-          {/* Circle */}
           <div className="relative flex-shrink-0">
             <svg
               viewBox="0 0 80 80"

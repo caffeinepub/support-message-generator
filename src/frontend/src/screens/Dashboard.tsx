@@ -15,6 +15,7 @@ import {
   Zap,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useRipple } from "../hooks/useRipple";
 import {
   adjustedDailyLimit,
   availableBalance,
@@ -48,7 +49,7 @@ const CATEGORY_ICONS: Record<string, string> = {
   Other: "💫",
 };
 
-// ─── useCountUp Hook ─────────────────────────────────────────────────────────
+// ─── useCountUp Hook ──────────────────────────────────────────────────
 function useCountUp(target: number, duration = 1200, enabled = true) {
   const [value, setValue] = useState(0);
   useEffect(() => {
@@ -62,7 +63,6 @@ function useCountUp(target: number, duration = 1200, enabled = true) {
     function tick(now: number) {
       const elapsed = now - start;
       const progress = Math.min(elapsed / duration, 1);
-      // ease-out cubic
       const eased = 1 - (1 - progress) ** 3;
       setValue(Math.round(eased * target));
       if (progress < 1) raf = requestAnimationFrame(tick);
@@ -73,7 +73,7 @@ function useCountUp(target: number, duration = 1200, enabled = true) {
   return value;
 }
 
-// ─── ShimmerBlock Component ──────────────────────────────────────────────────
+// ─── ShimmerBlock Component ───────────────────────────────────────────
 function ShimmerBlock({
   className,
   style,
@@ -86,7 +86,7 @@ function ShimmerBlock({
   );
 }
 
-// ─── Animated Donut Chart ────────────────────────────────────────────────────
+// ─── Animated Donut Chart ────────────────────────────────────────────
 function AnimatedDonutChart({
   catSpend,
   animateNow,
@@ -157,7 +157,6 @@ function AnimatedDonutChart({
 
   return (
     <div className="flex items-center gap-5">
-      {/* SVG donut */}
       <div className="relative flex-shrink-0">
         <svg
           viewBox="0 0 120 120"
@@ -165,7 +164,6 @@ function AnimatedDonutChart({
           role="img"
           aria-label="Category spending breakdown"
         >
-          {/* Track */}
           <circle
             cx={cx}
             cy={cy}
@@ -175,7 +173,6 @@ function AnimatedDonutChart({
             strokeWidth={strokeWidth}
             className="text-border/30"
           />
-          {/* Segments */}
           {segments.map((seg) => (
             <circle
               key={seg.cat}
@@ -200,7 +197,6 @@ function AnimatedDonutChart({
             />
           ))}
         </svg>
-        {/* Center */}
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
           <p className="text-[9px] font-semibold text-muted-foreground uppercase tracking-widest">
             Total
@@ -208,7 +204,6 @@ function AnimatedDonutChart({
           <p className="text-sm font-extrabold text-foreground">{fmt(total)}</p>
         </div>
       </div>
-      {/* Legend */}
       <div className="flex flex-col gap-2 flex-1 min-w-0">
         {segments.map((seg) => (
           <div key={seg.cat} className="flex items-center gap-2">
@@ -232,7 +227,7 @@ function AnimatedDonutChart({
   );
 }
 
-// ─── Animated Weekly Bar Chart ───────────────────────────────────────────────
+// ─── Animated Weekly Bar Chart ──────────────────────────────────────────
 function WeeklyBarChart({
   expenses,
   animateNow,
@@ -264,7 +259,6 @@ function WeeklyBarChart({
 
   return (
     <div>
-      {/* Bars */}
       <div className="flex items-end justify-between gap-1 h-24">
         {days.map((day, idx) => {
           const heightPct = day.amount > 0 ? (day.amount / maxAmount) * 100 : 0;
@@ -312,7 +306,6 @@ function WeeklyBarChart({
           );
         })}
       </div>
-      {/* X-axis labels */}
       <div className="flex justify-between mt-2">
         {days.map((day) => (
           <div key={day.key} className="flex-1 text-center">
@@ -338,7 +331,10 @@ function WeeklyBarChart({
 }
 
 // ─── Greeting ────────────────────────────────────────────────────────────────
-function Greeting({ name }: { name?: string }) {
+function Greeting({
+  name,
+  financialMood,
+}: { name?: string; financialMood: "healthy" | "neutral" | "danger" }) {
   const hour = new Date().getHours();
   const greeting =
     hour < 12 ? "Good Morning" : hour < 17 ? "Good Afternoon" : "Good Evening";
@@ -355,17 +351,32 @@ function Greeting({ name }: { name?: string }) {
         {firstName ? `, ${firstName}` : ""} 👋
       </p>
       <p className="text-xs text-muted-foreground mt-0.5">{date}</p>
+      {financialMood !== "neutral" && (
+        <span
+          className="inline-flex items-center gap-1 text-[10px] font-semibold px-2.5 py-0.5 rounded-full mt-1"
+          style={{
+            background:
+              financialMood === "healthy"
+                ? "rgba(46,229,157,0.15)"
+                : "rgba(239,68,68,0.15)",
+            color: financialMood === "healthy" ? "#2EE59D" : "#EF4444",
+          }}
+        >
+          {financialMood === "healthy" ? "✓ Saving on track" : "⚠ Overspending"}
+        </span>
+      )}
     </div>
   );
 }
 
-// ─── Stat Card ──────────────────────────────────────────────────────────────
+// ─── Stat Card ────────────────────────────────────────────────────────────────
 interface StatCardProps {
   icon: React.ReactNode;
   label: string;
   value: string;
   sub?: React.ReactNode;
   gradient: string;
+  boxShadow?: string;
   delay?: number;
   animationDelay?: number;
 }
@@ -375,6 +386,7 @@ function StatCard({
   value,
   sub,
   gradient,
+  boxShadow,
   delay = 0,
   animationDelay,
 }: StatCardProps) {
@@ -384,6 +396,7 @@ function StatCard({
       style={{
         background: gradient,
         boxShadow:
+          boxShadow ??
           "0 4px 20px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.15)",
         animationDelay: `${animationDelay ?? delay}ms`,
       }}
@@ -403,7 +416,7 @@ function StatCard({
   );
 }
 
-// ─── Main Props ──────────────────────────────────────────────────────────────
+// ─── Main Props ────────────────────────────────────────────────────────────────
 interface Props {
   profile: UserProfile;
   userName: string;
@@ -428,11 +441,11 @@ export default function Dashboard({
   const [balanceVisible, setBalanceVisible] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [countUpEnabled, setCountUpEnabled] = useState(false);
+  const ripple = useRipple();
 
   useEffect(() => {
     const shimmerTimer = setTimeout(() => {
       setIsLoading(false);
-      // Start count-up slightly after shimmer dissolves
       setTimeout(() => setCountUpEnabled(true), 100);
     }, 1000);
     return () => clearTimeout(shimmerTimer);
@@ -457,6 +470,50 @@ export default function Dashboard({
   const totalEMI = totalEMIBurden(loans);
   const totalOwed = totalOutstanding(loans);
   const { score } = healthScore(profile, expenses);
+
+  // ─── Financial Mood ─────────────────────────────────────────────────────────
+  type FinancialMood = "healthy" | "neutral" | "danger";
+  const isOverspending = todaySpent > dailyLimit && dailyLimit > 0;
+  const isLowBalance = balance < budget * 0.2 && budget > 0;
+  const isHealthy = savingsPct >= 50 && !isOverspending && !isLowBalance;
+  const financialMood: FinancialMood =
+    isOverspending || isLowBalance
+      ? "danger"
+      : isHealthy
+        ? "healthy"
+        : "neutral";
+
+  // Hero card gradient based on mood
+  const heroGradient =
+    financialMood === "danger"
+      ? "linear-gradient(135deg, #5a1a1a 0%, #6e1b1b 50%, #4a1818 100%)"
+      : financialMood === "healthy"
+        ? "linear-gradient(135deg, #0d3a2a 0%, #1a4a30 50%, #0d3020 100%)"
+        : "linear-gradient(135deg, #1a3a6e 0%, #2d1b6e 50%, #1a2d5a 100%)";
+
+  const heroBoxShadow =
+    financialMood === "danger"
+      ? "0 8px 40px rgba(239,68,68,0.35), 0 0 0 1px rgba(239,68,68,0.2)"
+      : financialMood === "healthy"
+        ? "0 8px 40px rgba(46,229,157,0.25), 0 0 0 1px rgba(46,229,157,0.2)"
+        : "0 8px 40px rgba(79,100,255,0.35), 0 0 0 1px rgba(123,92,255,0.2)";
+
+  // AI suggestion card style based on mood
+  const aiCardStyle: React.CSSProperties =
+    financialMood === "danger"
+      ? {
+          background: "rgba(239,68,68,0.06)",
+          border: "1px solid rgba(239,68,68,0.35)",
+        }
+      : financialMood === "healthy"
+        ? {
+            background: "rgba(46,229,157,0.05)",
+            border: "1px solid rgba(46,229,157,0.25)",
+          }
+        : {
+            background: "rgba(123,92,255,0.08)",
+            border: "1px solid rgba(123,92,255,0.2)",
+          };
 
   // Animated count-up values
   const animatedBalance = useCountUp(balance, 1200, countUpEnabled);
@@ -491,12 +548,14 @@ export default function Dashboard({
         className="flex items-start justify-between pt-5 animate-fade-up"
         style={{ animationDelay: "0ms" }}
       >
-        <Greeting name={userName} />
+        <Greeting name={userName} financialMood={financialMood} />
         <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={() => onNavigate("insights")}
-            className="w-9 h-9 rounded-xl flex items-center justify-center transition-colors hover:opacity-80"
+            onMouseDown={ripple}
+            onTouchStart={ripple}
+            className="ripple-container w-9 h-9 rounded-xl flex items-center justify-center transition-colors hover:opacity-80"
             style={{ background: "rgba(123,92,255,0.12)" }}
             aria-label="AI Insights"
             data-ocid="dashboard.link"
@@ -506,7 +565,9 @@ export default function Dashboard({
           <button
             type="button"
             onClick={onToggleTheme}
-            className="w-9 h-9 rounded-xl bg-muted/60 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+            onMouseDown={ripple}
+            onTouchStart={ripple}
+            className="ripple-container w-9 h-9 rounded-xl bg-muted/60 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
             aria-label="Toggle theme"
             data-ocid="dashboard.toggle"
           >
@@ -523,11 +584,10 @@ export default function Dashboard({
       <div
         className="p-5 rounded-2xl relative overflow-hidden animate-fade-up"
         style={{
-          background:
-            "linear-gradient(135deg, #1a3a6e 0%, #2d1b6e 50%, #1a2d5a 100%)",
-          boxShadow:
-            "0 8px 40px rgba(79,100,255,0.35), 0 0 0 1px rgba(123,92,255,0.2)",
+          background: heroGradient,
+          boxShadow: heroBoxShadow,
           animationDelay: "60ms",
+          transition: "background 0.6s ease, box-shadow 0.6s ease",
         }}
         data-ocid="dashboard.card"
       >
@@ -558,7 +618,6 @@ export default function Dashboard({
         />
 
         <div className="relative">
-          {/* Balance label + eye toggle */}
           <div className="flex items-center justify-between mb-1">
             <p className="text-[11px] font-semibold text-white/60 uppercase tracking-widest">
               Total Balance
@@ -579,7 +638,6 @@ export default function Dashboard({
             </button>
           </div>
 
-          {/* Balance content — shimmer or real */}
           {isLoading ? (
             <div className="space-y-3 mt-2">
               <ShimmerBlock className="h-10 w-48" />
@@ -592,7 +650,6 @@ export default function Dashboard({
             </div>
           ) : (
             <>
-              {/* Balance */}
               <p
                 className="text-4xl font-extrabold text-white tracking-tight leading-tight select-none"
                 style={{
@@ -608,7 +665,6 @@ export default function Dashboard({
                   : "Tap eye to reveal"}
               </p>
 
-              {/* Mini pill cards */}
               <div className="mt-4 grid grid-cols-3 gap-2">
                 {[
                   {
@@ -698,7 +754,7 @@ export default function Dashboard({
               gradient="linear-gradient(135deg, #4FA6FF 0%, #2E86AB 100%)"
               animationDelay={80}
             />
-            {/* Card 3: Savings */}
+            {/* Card 3: Savings — brighter green when healthy */}
             <StatCard
               icon={<Target className="w-5 h-5 text-white" />}
               label="Savings"
@@ -708,7 +764,16 @@ export default function Dashboard({
                   {Math.round(savingsPct)}% of goal
                 </p>
               }
-              gradient="linear-gradient(135deg, #2EE59D 0%, #0BA360 100%)"
+              gradient={
+                financialMood === "healthy"
+                  ? "linear-gradient(135deg, #00c853 0%, #0BA360 100%)"
+                  : "linear-gradient(135deg, #2EE59D 0%, #0BA360 100%)"
+              }
+              boxShadow={
+                financialMood === "healthy"
+                  ? "0 4px 20px rgba(0,200,83,0.3), inset 0 1px 0 rgba(255,255,255,0.15)"
+                  : undefined
+              }
               animationDelay={160}
             />
           </div>
@@ -724,10 +789,10 @@ export default function Dashboard({
         <div
           className="glass-card p-4"
           style={{
-            borderColor:
-              todaySpent > dailyLimit && dailyLimit > 0
-                ? "rgba(239,68,68,0.3)"
-                : undefined,
+            borderColor: isOverspending ? "rgba(239,68,68,0.3)" : undefined,
+            animation: isOverspending
+              ? "pulseBorderRed 1.5s ease-in-out infinite"
+              : undefined,
           }}
           data-ocid="dashboard.panel"
         >
@@ -735,10 +800,7 @@ export default function Dashboard({
             <Zap
               className="w-3.5 h-3.5"
               style={{
-                color:
-                  todaySpent > dailyLimit && dailyLimit > 0
-                    ? "#EF4444"
-                    : "#4FA6FF",
+                color: isOverspending ? "#EF4444" : "#4FA6FF",
               }}
             />
             <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
@@ -748,13 +810,10 @@ export default function Dashboard({
           <p
             className="text-xl font-extrabold"
             style={{
-              color:
-                todaySpent > dailyLimit && dailyLimit > 0
-                  ? "#EF4444"
-                  : undefined,
+              color: isOverspending ? "#EF4444" : undefined,
             }}
           >
-            <span className={todaySpent > dailyLimit ? "" : "text-foreground"}>
+            <span className={isOverspending ? "" : "text-foreground"}>
               {fmtFull(todaySpent)}
             </span>
           </p>
@@ -766,17 +825,23 @@ export default function Dashboard({
               className="h-full rounded-full transition-all duration-700"
               style={{
                 width: `${Math.min(100, dailyLimit > 0 ? (todaySpent / dailyLimit) * 100 : 0)}%`,
-                background:
-                  todaySpent > dailyLimit && dailyLimit > 0
-                    ? "#EF4444"
-                    : "#4FA6FF",
+                background: isOverspending ? "#EF4444" : "#4FA6FF",
               }}
             />
           </div>
         </div>
 
         {/* Remaining */}
-        <div className="glass-card p-4" data-ocid="dashboard.panel">
+        <div
+          className="glass-card p-4"
+          style={{
+            animation:
+              savingsPct >= 80
+                ? "pulseBorderGreen 2s ease-in-out infinite"
+                : undefined,
+          }}
+          data-ocid="dashboard.panel"
+        >
           <div className="flex items-center gap-1.5 mb-2">
             <TrendingUp className="w-3.5 h-3.5" style={{ color: "#2EE59D" }} />
             <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
@@ -803,9 +868,9 @@ export default function Dashboard({
       <div
         className="p-4 rounded-2xl flex gap-3 items-start animate-fade-up"
         style={{
-          background: "rgba(123,92,255,0.08)",
-          border: "1px solid rgba(123,92,255,0.2)",
+          ...aiCardStyle,
           animationDelay: "220ms",
+          transition: "background 0.6s ease, border-color 0.6s ease",
         }}
         data-ocid="dashboard.panel"
       >
@@ -831,7 +896,9 @@ export default function Dashboard({
         <button
           type="button"
           onClick={() => onNavigate("insights")}
-          className="text-[10px] font-semibold px-2.5 py-1 rounded-full flex-shrink-0 transition-opacity hover:opacity-80"
+          onMouseDown={ripple}
+          onTouchStart={ripple}
+          className="ripple-container text-[10px] font-semibold px-2.5 py-1 rounded-full flex-shrink-0 transition-opacity hover:opacity-80"
           style={{ background: "rgba(123,92,255,0.15)", color: "#7B5CFF" }}
           data-ocid="dashboard.link"
         >
@@ -840,7 +907,6 @@ export default function Dashboard({
       </div>
 
       {/* ── CHARTS SECTION ── */}
-      {/* Spending by Category — Animated Donut */}
       <div
         className="glass-card p-5 animate-fade-up"
         style={{ animationDelay: "280ms" }}
@@ -889,7 +955,9 @@ export default function Dashboard({
           <button
             type="button"
             onClick={() => onNavigate("expenses")}
-            className="text-[11px] font-semibold px-3 py-1 rounded-full transition-opacity hover:opacity-75"
+            onMouseDown={ripple}
+            onTouchStart={ripple}
+            className="ripple-container text-[11px] font-semibold px-3 py-1 rounded-full transition-opacity hover:opacity-75"
             style={{ background: "rgba(79,166,255,0.12)", color: "#4FA6FF" }}
             data-ocid="dashboard.link"
           >
@@ -898,13 +966,78 @@ export default function Dashboard({
         </div>
 
         {recentExpenses.length === 0 ? (
-          <div className="text-center py-6" data-ocid="dashboard.empty_state">
-            <p className="text-2xl mb-2">💸</p>
-            <p className="text-sm font-medium text-muted-foreground">
-              No transactions yet.
+          <div className="text-center py-8" data-ocid="dashboard.empty_state">
+            <svg
+              viewBox="0 0 120 100"
+              className="w-28 h-24 mx-auto mb-3 opacity-40"
+              fill="none"
+              role="img"
+              aria-label="No transactions yet illustration"
+            >
+              <rect
+                x="20"
+                y="30"
+                width="80"
+                height="50"
+                rx="10"
+                stroke="currentColor"
+                strokeWidth="2"
+                className="text-muted-foreground"
+              />
+              <rect
+                x="20"
+                y="30"
+                width="80"
+                height="16"
+                rx="10"
+                fill="currentColor"
+                className="text-muted-foreground"
+                opacity="0.3"
+              />
+              <line
+                x1="35"
+                y1="60"
+                x2="85"
+                y2="60"
+                stroke="currentColor"
+                strokeWidth="2"
+                className="text-muted-foreground"
+                strokeLinecap="round"
+              />
+              <line
+                x1="35"
+                y1="72"
+                x2="65"
+                y2="72"
+                stroke="currentColor"
+                strokeWidth="2"
+                className="text-muted-foreground"
+                strokeLinecap="round"
+              />
+              <circle
+                cx="95"
+                cy="25"
+                r="12"
+                fill="currentColor"
+                className="text-primary"
+                opacity="0.5"
+              />
+              <line
+                x1="95"
+                y1="20"
+                x2="95"
+                y2="26"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+              <circle cx="95" cy="29" r="1.5" fill="white" />
+            </svg>
+            <p className="text-sm font-semibold text-foreground">
+              No transactions yet
             </p>
-            <p className="text-xs text-muted-foreground/60 mt-1">
-              Tap + to add your first expense.
+            <p className="text-xs text-muted-foreground mt-1 max-w-[180px] mx-auto">
+              Tap the + button to log your first expense
             </p>
           </div>
         ) : (
@@ -924,7 +1057,6 @@ export default function Dashboard({
                   className="flex items-center gap-3"
                   data-ocid={`dashboard.item.${idx + 1}`}
                 >
-                  {/* Category icon pill */}
                   <div
                     className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-base"
                     style={{
@@ -934,7 +1066,6 @@ export default function Dashboard({
                   >
                     {icon}
                   </div>
-                  {/* Details */}
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-foreground truncate">
                       {expense.note || expense.category}
@@ -943,7 +1074,6 @@ export default function Dashboard({
                       {dateLabel}
                     </p>
                   </div>
-                  {/* Amount */}
                   <p
                     className="text-sm font-bold flex-shrink-0"
                     style={{ color: "#EF4444" }}
@@ -1038,7 +1168,9 @@ export default function Dashboard({
       <button
         type="button"
         onClick={() => onNavigate("insights")}
-        className="w-full p-4 rounded-2xl flex items-center gap-4 transition-all active:scale-[0.98] text-left animate-fade-up hover:opacity-90"
+        onMouseDown={ripple}
+        onTouchStart={ripple}
+        className="ripple-container w-full p-4 rounded-2xl flex items-center gap-4 transition-all active:scale-[0.98] text-left animate-fade-up hover:opacity-90"
         style={{
           background:
             "linear-gradient(135deg, rgba(79,166,255,0.1) 0%, rgba(123,92,255,0.1) 100%)",
@@ -1125,7 +1257,9 @@ export default function Dashboard({
       <button
         type="button"
         onClick={onAddExpense}
-        className="fixed flex items-center justify-center text-white rounded-full shadow-2xl transition-all active:scale-90 z-40"
+        onMouseDown={ripple}
+        onTouchStart={ripple}
+        className="ripple-container fixed flex items-center justify-center text-white rounded-full shadow-2xl transition-all active:scale-90 z-40"
         style={{
           bottom: 80,
           right: "calc(50% - 210px + 16px)",

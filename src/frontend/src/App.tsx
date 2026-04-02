@@ -1,5 +1,5 @@
 import { Toaster } from "@/components/ui/sonner";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import BottomNav from "./components/BottomNav";
 import Onboarding from "./components/Onboarding";
 import { storage } from "./lib/storage";
@@ -40,6 +40,8 @@ export default function App() {
     storage.getTheme(),
   );
   const [screen, setScreen] = useState<Screen>("dashboard");
+  const [transitionKey, setTransitionKey] = useState(0);
+  const prevScreenRef = useRef<Screen>("dashboard");
 
   // Apply theme
   useEffect(() => {
@@ -143,6 +145,15 @@ export default function App() {
 
   function goToAddExpense() {
     setScreen("expenses");
+    setTransitionKey((k) => k + 1);
+  }
+
+  function handleNavigate(s: Screen) {
+    if (s !== screen) {
+      prevScreenRef.current = screen;
+      setScreen(s);
+      setTransitionKey((k) => k + 1);
+    }
   }
 
   function handleLogout() {
@@ -212,82 +223,91 @@ export default function App() {
           className="flex-1 overflow-y-auto scrollbar-none"
           style={{ paddingBottom: 80 }}
         >
-          {screen === "dashboard" && (
-            <Dashboard
-              profile={profile}
-              userName={userName}
-              expenses={expenses}
-              loans={loans}
-              onAddExpense={goToAddExpense}
-              theme={theme}
-              onToggleTheme={toggleTheme}
-              onNavigate={setScreen}
-            />
-          )}
-          {screen === "insights" && (
-            <AIInsightsScreen
-              profile={profile}
-              expenses={expenses}
-              loans={loans}
-              onNavigate={setScreen}
-            />
-          )}
-          {screen === "expenses" && (
-            <ExpensesScreen
-              expenses={expenses}
-              onAdd={handleAddExpense}
-              onDelete={handleDeleteExpense}
-              onNavigate={setScreen}
-            />
-          )}
-          {screen === "history" && (
-            <HistoryScreen
-              expenses={expenses}
-              onDelete={handleDeleteExpense}
-              onNavigate={setScreen}
-            />
-          )}
-          {screen === "goals" && (
-            <GoalsScreen
-              profile={profile}
-              expenses={expenses}
-              onUpdateProfile={handleUpdateProfile}
-            />
-          )}
-          {screen === "budget" && <BudgetPlannerScreen profile={profile} />}
-          {screen === "chat" && (
-            <ChatScreen
-              messages={chatMessages}
-              profile={profile}
-              expenses={expenses}
-              loans={loans}
-              onSendMessage={handleChatUpdate}
-            />
-          )}
-          {screen === "loans" && (
-            <LoanScreen
-              loans={loans}
-              profile={profile}
-              onAdd={handleAddLoan}
-              onDelete={handleDeleteLoan}
-              onMarkPaid={handleMarkEMIPaid}
-            />
-          )}
-          {screen === "profile" && (
-            <ProfileScreen
-              profile={profile}
-              userName={userName || userEmail.split("@")[0]}
-              userEmail={userEmail}
-              theme={theme}
-              onToggleTheme={toggleTheme}
-              onNavigate={setScreen}
-              onLogout={handleLogout}
-            />
-          )}
+          {/* Screen transition wrapper */}
+          <div
+            key={transitionKey}
+            style={{
+              animation:
+                "screenSlideIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) both",
+            }}
+          >
+            {screen === "dashboard" && (
+              <Dashboard
+                profile={profile}
+                userName={userName}
+                expenses={expenses}
+                loans={loans}
+                onAddExpense={goToAddExpense}
+                theme={theme}
+                onToggleTheme={toggleTheme}
+                onNavigate={handleNavigate}
+              />
+            )}
+            {screen === "insights" && (
+              <AIInsightsScreen
+                profile={profile}
+                expenses={expenses}
+                loans={loans}
+                onNavigate={handleNavigate}
+              />
+            )}
+            {screen === "expenses" && (
+              <ExpensesScreen
+                expenses={expenses}
+                onAdd={handleAddExpense}
+                onDelete={handleDeleteExpense}
+                onNavigate={handleNavigate}
+              />
+            )}
+            {screen === "history" && (
+              <HistoryScreen
+                expenses={expenses}
+                onDelete={handleDeleteExpense}
+                onNavigate={handleNavigate}
+              />
+            )}
+            {screen === "goals" && (
+              <GoalsScreen
+                profile={profile}
+                expenses={expenses}
+                onUpdateProfile={handleUpdateProfile}
+              />
+            )}
+            {screen === "budget" && <BudgetPlannerScreen profile={profile} />}
+            {screen === "chat" && (
+              <ChatScreen
+                messages={chatMessages}
+                profile={profile}
+                expenses={expenses}
+                loans={loans}
+                onSendMessage={handleChatUpdate}
+              />
+            )}
+            {screen === "loans" && (
+              <LoanScreen
+                loans={loans}
+                profile={profile}
+                onAdd={handleAddLoan}
+                onDelete={handleDeleteLoan}
+                onMarkPaid={handleMarkEMIPaid}
+              />
+            )}
+            {screen === "profile" && (
+              <ProfileScreen
+                profile={profile}
+                userName={userName || userEmail.split("@")[0]}
+                userEmail={userEmail}
+                theme={theme}
+                onToggleTheme={toggleTheme}
+                onNavigate={handleNavigate}
+                onLogout={handleLogout}
+              />
+            )}
+          </div>
         </main>
 
         {/* Bottom navigation */}
-        <BottomNav active={screen} onChange={setScreen} />
+        <BottomNav active={screen} onChange={handleNavigate} />
 
         <Toaster richColors position="top-center" />
       </div>
