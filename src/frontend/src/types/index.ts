@@ -20,15 +20,15 @@ export interface Expense {
 
 export interface Loan {
   id: string;
-  name: string; // e.g. "Home Loan"
-  lender: string; // e.g. "HDFC Bank"
+  name: string;
+  lender: string;
   loanType: LoanType;
-  principal: number; // original loan amount
-  interestRate: number; // % per annum
-  tenureMonths: number; // total tenure
-  emiAmount: number; // monthly EMI
-  startDate: string; // YYYY-MM-DD
-  paidMonths: number; // how many EMIs paid so far
+  principal: number;
+  interestRate: number;
+  tenureMonths: number;
+  emiAmount: number;
+  startDate: string;
+  paidMonths: number;
 }
 
 export interface ChatMessage {
@@ -38,4 +38,12 @@ export interface ChatMessage {
   timestamp: number;
 }
 
-export type Screen = "dashboard" | "expenses" | "goals" | "chat" | "loans";
+export type Screen =
+  | "dashboard"
+  | "expenses"
+  | "goals"
+  | "chat"
+  | "loans"
+  | "insights"
+  | "budget"
+  | "profile";

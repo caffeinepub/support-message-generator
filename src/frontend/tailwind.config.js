@@ -14,7 +14,7 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+        sans: ['"Plus Jakarta Sans"', "system-ui", "sans-serif"],
       },
       colors: {
         border: "oklch(var(--border) / <alpha-value>)",
@@ -80,8 +80,8 @@ export default {
       },
       boxShadow: {
         card: "0 18px 40px rgba(0,0,0,0.45)",
-        brand: "0 0 20px rgba(24,199,183,0.35)",
-        "brand-lg": "0 0 40px rgba(24,199,183,0.25)",
+        brand: "0 0 20px rgba(79, 92, 255, 0.35)",
+        "brand-lg": "0 0 40px rgba(79, 92, 255, 0.25)",
       },
       keyframes: {
         "accordion-down": {
@@ -92,10 +92,34 @@ export default {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
+        fadeSlideUp: {
+          from: { opacity: "0", transform: "translateY(16px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
+        },
+        scaleIn: {
+          from: { opacity: "0", transform: "scale(0.92)" },
+          to: { opacity: "1", transform: "scale(1)" },
+        },
+        loadSpin: {
+          to: { transform: "rotate(360deg)" },
+        },
+        bounceDot: {
+          "0%, 80%, 100%": { transform: "translateY(0)" },
+          "40%": { transform: "translateY(-6px)" },
+        },
+        splashRing: {
+          "0%": { transform: "scale(0.8)", opacity: "0.9" },
+          "100%": { transform: "scale(1.4)", opacity: "0" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "fade-up": "fadeSlideUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) both",
+        "scale-in": "scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) both",
+        "spin-slow": "loadSpin 1.5s linear infinite",
+        "bounce-dots": "bounceDot 1.4s ease-in-out infinite",
+        "splash-ring": "splashRing 2s ease-out infinite",
       },
     },
   },

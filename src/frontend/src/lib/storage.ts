@@ -7,6 +7,8 @@ const KEYS = {
   THEME: "acm_theme",
   DAILY_HISTORY: "acm_daily_history",
   LOANS: "acm_loans",
+  BUDGET_PLAN: "acm_budget_plan",
+  AUTH: "acm_auth",
 } as const;
 
 export const storage = {
@@ -75,5 +77,40 @@ export const storage = {
   },
   setLoans(loans: Loan[]) {
     localStorage.setItem(KEYS.LOANS, JSON.stringify(loans));
+  },
+
+  getBudgetPlan(): { needs: number; wants: number; savings: number } | null {
+    try {
+      const raw = localStorage.getItem(KEYS.BUDGET_PLAN);
+      return raw
+        ? (JSON.parse(raw) as { needs: number; wants: number; savings: number })
+        : null;
+    } catch {
+      return null;
+    }
+  },
+  setBudgetPlan(plan: { needs: number; wants: number; savings: number }) {
+    localStorage.setItem(KEYS.BUDGET_PLAN, JSON.stringify(plan));
+  },
+
+  getAuth(): { email: string; name: string } | null {
+    try {
+      const raw = localStorage.getItem(KEYS.AUTH);
+      return raw ? (JSON.parse(raw) as { email: string; name: string }) : null;
+    } catch {
+      return null;
+    }
+  },
+  setAuth(auth: { email: string; name: string }) {
+    localStorage.setItem(KEYS.AUTH, JSON.stringify(auth));
+  },
+  clearAuth() {
+    localStorage.removeItem(KEYS.AUTH);
+  },
+
+  clearAll() {
+    for (const k of Object.values(KEYS)) {
+      localStorage.removeItem(k);
+    }
   },
 };
