@@ -8,9 +8,9 @@ import Int "mo:core/Int";
 import Array "mo:core/Array";
 import Float "mo:core/Float";
 import Principal "mo:core/Principal";
-import Migration "migration";
 
-(with migration = Migration.run)
+
+
 actor {
   type Role = {
     #user;
